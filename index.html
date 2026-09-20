@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Шпаргалка к собесу · Middle React</title>
+  <style>
+    :root {
+      --bg: #0b1017;
+      --bg-elevated: #121925;
+      --sidebar: #0e141d;
+      --card: #151d2b;
+      --line: #243044;
+      --text: #e8edf5;
+      --muted: #93a0b5;
+      --accent: #5eead4;
+      --accent-2: #fbbf24;
+      --keyword: #fde68a;
+      --hover: #1c2738;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 1.5rem; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(900px 400px at 15% -10%, rgba(94, 234, 212, 0.08), transparent 50%),
+        radial-gradient(700px 360px at 90% 0%, rgba(251, 191, 36, 0.06), transparent 45%);
+      z-index: 0;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      background: var(--sidebar);
+      border-right: 1px solid var(--line);
+      padding: 1.25rem 0.9rem 2rem;
+    }
+
+    .brand {
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin: 0 0 0.2rem;
+    }
+
+    .brand span { color: var(--accent); }
+
+    .brand-sub {
+      color: var(--muted);
+      font-size: 0.78rem;
+      margin-bottom: 1rem;
+    }
+
+    .tools {
+      display: flex;
+      gap: 0.4rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .search {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 0.55rem 0.7rem;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .search:focus { border-color: var(--accent); }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 0.5rem 0.65rem;
+      cursor: pointer;
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .group { margin-bottom: 1rem; }
+    .group-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      padding: 0 0.45rem 0.35rem;
+    }
+
+    .nav-link {
+      display: block;
+      color: #c9d4e5;
+      text-decoration: none;
+      font-size: 0.86rem;
+      padding: 0.32rem 0.5rem;
+      border-radius: 8px;
+      border-left: 2px solid transparent;
+    }
+
+    .nav-link:hover { background: var(--hover); color: #fff; }
+    .nav-link.active {
+      background: rgba(94, 234, 212, 0.1);
+      color: var(--accent);
+      border-left-color: var(--accent);
+    }
+
+    .content {
+      max-width: 780px;
+      padding: 2.2rem 2rem 5rem;
+    }
+
+    .hero h1 {
+      font-size: 2rem;
+      line-height: 1.2;
+      margin: 0 0 0.6rem;
+    }
+
+    .hero p {
+      color: var(--muted);
+      margin: 0 0 1.6rem;
+      max-width: 62ch;
+    }
+
+    .note {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.9rem 1rem;
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 2rem;
+    }
+
+    section.topic {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 1.25rem 1.3rem 1.15rem;
+      margin-bottom: 1rem;
+      scroll-margin-top: 1.2rem;
+    }
+
+    .topic h2 {
+      display: flex;
+      align-items: baseline;
+      gap: 0.65rem;
+      font-size: 1.15rem;
+      margin: 0 0 0.7rem;
+    }
+
+    .num {
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 700;
+      min-width: 1.6rem;
+    }
+
+    .topic p { margin: 0 0 0.7rem; }
+    .topic p:last-child { margin-bottom: 0; }
+
+    strong {
+      color: var(--keyword);
+      font-weight: 700;
+    }
+
+    .scheme {
+      display: grid;
+      gap: 0.45rem;
+      margin: 0.85rem 0 0.2rem;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.82rem;
+    }
+
+    .scheme div {
+      background: var(--bg);
+      border: 1px dashed var(--line);
+      border-radius: 10px;
+      padding: 0.55rem 0.7rem;
+      color: #c5d0e0;
+    }
+
+    .menu-btn {
+      display: none;
+      position: fixed;
+      top: 0.8rem;
+      right: 0.8rem;
+      z-index: 20;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 0.82rem;
+      padding: 0.4rem 0.5rem;
+      display: none;
+    }
+
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: min(86vw, 320px);
+        transform: translateX(-110%);
+        transition: transform 0.2s ease;
+        z-index: 15;
+      }
+      .sidebar.open { transform: none; }
+      .menu-btn { display: inline-block; }
+      .content { padding: 1.3rem 1rem 4rem; }
+    }
+  </style>
+</head>
+<body>
+  <button class="btn menu-btn" id="menuBtn" type="button">Темы</button>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <p class="brand">Собес · <span>React Middle</span></p>
+      <p class="brand-sub">Кликни слово — прыгнешь к теме</p>
+      <div class="tools">
+        <input class="search" id="search" type="search" placeholder="Поиск: замыкание, jwt..." />
+      </div>
+      <button class="btn" id="randomBtn" type="button">Случайная тема</button>
+      <p class="empty" id="empty">Ничего не нашлось</p>
+      <nav id="nav">
+        <div class="group" data-group>
+          <div class="group-title">JavaScript</div>
+          <a class="nav-link" href="#js-types">типы данных JS</a>
+          <a class="nav-link" href="#js-var">var let const</a>
+          <a class="nav-link" href="#js-equal">== и ===</a>
+          <a class="nav-link" href="#js-scope">области видимости</a>
+          <a class="nav-link" href="#js-hoisting">всплытие</a>
+          <a class="nav-link" href="#js-closure">замыкания</a>
+          <a class="nav-link" href="#js-this">this</a>
+          <a class="nav-link" href="#js-bind">call apply bind</a>
+          <a class="nav-link" href="#js-proto">прототипы</a>
+          <a class="nav-link" href="#js-recursion">рекурсия</a>
+          <a class="nav-link" href="#js-event-loop">event loop</a>
+          <a class="nav-link" href="#js-promise">промисы async</a>
+          <a class="nav-link" href="#js-events">всплытие событий</a>
+          <a class="nav-link" href="#js-delegate">делегирование</a>
+          <a class="nav-link" href="#js-copy">копирование</a>
+          <a class="nav-link" href="#js-map">map set</a>
+          <a class="nav-link" href="#js-debounce">debounce throttle</a>
+        </div>
+        <div class="group" data-group>
+          <div class="group-title">TypeScript</div>
+          <a class="nav-link" href="#ts-types">типы данных TS</a>
+          <a class="nav-link" href="#ts-base">interface type union</a>
+          <a class="nav-link" href="#ts-generic">дженерики</a>
+          <a class="nav-link" href="#ts-any">any unknown never</a>
+          <a class="nav-link" href="#ts-util">utility types</a>
+        </div>
+        <div class="group" data-group>
+          <div class="group-title">React</div>
+          <a class="nav-link" href="#react-arch">FSD Atomic</a>
+          <a class="nav-link" href="#react-css">стили CSS</a>
+          <a class="nav-link" href="#react-dom">React и DOM</a>
+          <a class="nav-link" href="#react-vdom">virtual DOM</a>
+          <a class="nav-link" href="#react-hooks">хуки</a>
+          <a class="nav-link" href="#react-keys">ключи</a>
+          <a class="nav-link" href="#react-context">context</a>
+          <a class="nav-link" href="#react-forms-ctrl">controlled</a>
+          <a class="nav-link" href="#react-memo">memo useMemo</a>
+        </div>
+        <div class="group" data-group>
+          <div class="group-title">Данные и формы</div>
+          <a class="nav-link" href="#store">zustand redux</a>
+          <a class="nav-link" href="#forms">формы zod yup</a>
+          <a class="nav-link" href="#tanstack">tanstack router</a>
+        </div>
+        <div class="group" data-group>
+          <div class="group-title">HTTP и авторизация</div>
+          <a class="nav-link" href="#http">HTTP</a>
+          <a class="nav-link" href="#cors">CORS</a>
+          <a class="nav-link" href="#jwt">JWT cookie storage</a>
+          <a class="nav-link" href="#auth">пример авторизации</a>
+          <a class="nav-link" href="#xss">XSS CSRF</a>
+        </div>
+        <div class="group" data-group>
+          <div class="group-title">CSS</div>
+          <a class="nav-link" href="#css-box">box model flex grid</a>
+          <a class="nav-link" href="#css-pos">позиционирование</a>
+        </div>
+        <div class="group" data-group>
+          <div class="group-title">Что происходит, если…</div>
+          <a class="nav-link" href="#q-domain">домен в строке</a>
+          <a class="nav-link" href="#q-render">HTML → пиксели</a>
+          <a class="nav-link" href="#q-click">клик и setState</a>
+          <a class="nav-link" href="#q-route">переход по роуту</a>
+          <a class="nav-link" href="#q-refresh">F5 и авторизация</a>
+        </div>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <header class="hero">
+        <h1>Короткая шпаргалка перед собесом</h1>
+        <p>Темы middle frontend React. Каждая карточка — 3–5 простых предложений. Жирным выделены слова, которые стоит произнести вслух.</p>
+      </header>
+
+      <div class="note">
+        Это не учебник и не «правильный ответ на 10 минут». Цель — быстро освежить картинку в голове: что это, зачем это, чем одно отличается от другого.
+      </div>
+
+      <section class="topic" id="js-types">
+        <h2><span class="num">01</span> Типы данных в JS</h2>
+        <p>В JavaScript есть примитивы: <strong>string</strong>, <strong>number</strong>, <strong>boolean</strong>, <strong>null</strong>, <strong>undefined</strong>, <strong>bigint</strong>, <strong>symbol</strong>. Всё остальное — <strong>object</strong>: объекты, массивы, функции, даты. Примитив копируется по значению, объект — по ссылке: две переменные могут смотреть на один и тот же объект в памяти.</p>
+        <p><strong>typeof null</strong> странно вернёт <strong>"object"</strong> — это старый баг языка, его просто помнят. Массив проверяют через <strong>Array.isArray</strong>, а не typeof. На собесе часто дают пару значений и спрашивают, что вернёт typeof.</p>
+      </section>
+
+      <section class="topic" id="js-var">
+        <h2><span class="num">02</span> var, let, const</h2>
+        <p><strong>var</strong> живёт в функции, всплывает и его можно объявить дважды — сейчас почти не используют. <strong>let</strong> и <strong>const</strong> живут в блоке <strong>{ }</strong> и до строки объявления находятся в <strong>временной мёртвой зоне</strong>: обратиться рано нельзя.</p>
+        <p><strong>const</strong> запрещает менять саму переменную, но поля объекта внутри менять можно. Для значений, которые переназначаешь — let, для остального — const. Если на собесе спросят «что выбрать по умолчанию» — говори <strong>const</strong>.</p>
+      </section>
+
+      <section class="topic" id="js-equal">
+        <h2><span class="num">03</span> == и ===</h2>
+        <p><strong>===</strong> сравнивает и значение, и тип: <strong>1 === "1"</strong> это false. <strong>==</strong> сначала приводит типы, поэтому <strong>1 == "1"</strong> true, а <strong>null == undefined</strong> тоже true. Из-за этих сюрпризов в работе почти всегда пишут строгое равенство.</p>
+        <p>Отдельная ловушка: <strong>NaN === NaN</strong> — false, проверяют через <strong>Number.isNaN</strong>. На собесе могут спросить таблицу: <strong>false == 0</strong>, <strong>"" == 0</strong>, <strong>null == 0</strong>. Последнее — false, null дружит через == только с undefined.</p>
+      </section>
+
+      <section class="topic" id="js-scope">
+        <h2><span class="num">04</span> Области видимости</h2>
+        <p><strong>Область видимости</strong> — где переменную видно. Есть глобальная, функциональная и блочная. Вложенная функция видит переменные снаружи, наоборот — нет. Движок ищет имя сначала рядом, потом выше, пока не дойдёт до глобальной области.</p>
+        <p>Если не нашёл — будет ошибка <strong>is not defined</strong>. Это не то же самое, что <strong>undefined</strong>: второе значит «переменная есть, значения нет». Модули ES6 имеют свою область: то, что не экспортировал, снаружи не видно.</p>
+      </section>
+
+      <section class="topic" id="js-hoisting">
+        <h2><span class="num">05</span> Всплытие (hoisting)</h2>
+        <p><strong>Всплытие</strong> — движок как будто поднимает объявления наверх области видимости. У <strong>var</strong> поднимается переменная со значением undefined. У <strong>function declaration</strong> поднимается вся функция, её можно вызвать выше по коду.</p>
+        <p>У <strong>let</strong> и <strong>const</strong> тоже есть всплытие, но без доступа до строки объявления. <strong>Function expression</strong> и стрелки ведут себя как переменные, а не как declaration. На собесе часто дают код «что выведется» с функцией и var до объявления.</p>
+      </section>
+
+      <section class="topic" id="js-closure">
+        <h2><span class="num">06</span> Замыкания</h2>
+        <p><strong>Замыкание</strong> — функция помнит переменные той области, где её создали, даже если эту область уже «закончили». Так работают счётчики, приватные поля в модуле и колбэки, которые используют данные снаружи.</p>
+        <p>Классическая ловушка: цикл с <strong>var</strong> и setTimeout — все колбэки видят одно и то же i. С <strong>let</strong> у каждой итерации своя переменная. Замыкание не копия значения, а живая ссылка на окружение. Если внутри меняешь переменную, все замкнутые функции видят новое значение.</p>
+      </section>
+
+      <section class="topic" id="js-this">
+        <h2><span class="num">07</span> this в JS</h2>
+        <p><strong>this</strong> — кто вызвал функцию, а не где её написали. У обычной функции this зависит от вызова: <strong>obj.method()</strong> даст obj, голый вызов в строгом режиме — undefined. У <strong>стрелки</strong> своего this нет: она берёт его снаружи и его не перебить вызовом.</p>
+        <p>В обработчике DOM у обычной функции this — элемент, у стрелки — уже нет. В классах методы лучше вешать стрелкой или биндить, иначе this потеряется в колбэке. На React-собесе this почти не мучают, но база нужна, если дадут чистый JS.</p>
+      </section>
+
+      <section class="topic" id="js-bind">
+        <h2><span class="num">08</span> call, apply, bind</h2>
+        <p>Три способа явно сказать функции: «вот твой this». <strong>call(this, a, b)</strong> вызывает сразу, аргументы списком. <strong>apply(this, [a, b])</strong> то же, но аргументы массивом. <strong>bind(this)</strong> не вызывает, а возвращает новую функцию с пришитым this.</p>
+        <p>bind ещё умеет заранее подставить часть аргументов — это <strong>частичное применение</strong>. Стрелку биндить бессмысленно: this у неё и так лексический. Сейчас чаще пишут стрелки и не трогают bind, но вопрос любят как проверку базы.</p>
+      </section>
+
+      <section class="topic" id="js-proto">
+        <h2><span class="num">09</span> Прототипы</h2>
+        <p>У объекта есть скрытая ссылка <strong>[[Prototype]]</strong>, её видно как <strong>__proto__</strong> или через <strong>Object.getPrototypeOf</strong>. Если свойства нет у самого объекта, JS идёт по <strong>цепочке прототипов</strong>, пока не найдёт или не упрётся в null.</p>
+        <p>Так у массивов появляется <strong>map</strong>: он лежит на <strong>Array.prototype</strong>. <strong>class</strong> в JS — сахар над прототипами. <strong>hasOwn</strong> проверяет «это моё поле», а <strong>in</strong> смотрит ещё и в прототип. На middle хватит объяснить цепочку и чем свойство объекта отличается от свойства прототипа.</p>
+      </section>
+
+      <section class="topic" id="js-recursion">
+        <h2><span class="num">10</span> Рекурсия</h2>
+        <p><strong>Рекурсия</strong> — функция вызывает сама себя, пока не дойдёт до <strong>базового случая</strong>. Без него будет бесконечный вызов и переполнение стека. Удобно для деревьев, вложенных комментариев, обхода папок, глубокого клона.</p>
+        <p>Каждый вызов занимает кадр в стеке, поэтому очень глубокая рекурсия опасна. Иногда её заменяют циклом и своей стопкой. На собесе часто просят факториал или обход дерева: важно сначала назвать условие выхода, потом шаг «уменьшения задачи».</p>
+      </section>
+
+      <section class="topic" id="js-event-loop">
+        <h2><span class="num">11</span> Event loop</h2>
+        <p>JS однопоточный: одновременно крутится один кусок кода в <strong>call stack</strong>. Когда стек пуст, <strong>event loop</strong> забирает задачи из очередей. Сначала все <strong>микротаски</strong> (Promise.then, queueMicrotask, MutationObserver), потом одна <strong>макротаска</strong> (setTimeout, setInterval, события UI), и снова микротаски.</p>
+        <p>Поэтому промис срабатывает раньше <strong>setTimeout(fn, 0)</strong>. Тяжёлый цикл без пауз замораживает страницу: цикл событий не доходит до отрисовки. <strong>async/await</strong> — тот же промис: после await продолжение функции идёт как микротаска.</p>
+        <div class="scheme">
+          <div>1. Синхронный код → call stack</div>
+          <div>2. Очередь микротасков: Promise.then / await</div>
+          <div>3. Одна макротаска: setTimeout / click</div>
+          <div>4. Браузер может отрисовать кадр и начать сначала</div>
+        </div>
+      </section>
+
+      <section class="topic" id="js-promise">
+        <h2><span class="num">12</span> Промисы и async/await</h2>
+        <p><strong>Promise</strong> — обёртка над будущим результатом: pending, fulfilled, rejected. <strong>then</strong> обрабатывает успех, <strong>catch</strong> — ошибку, <strong>finally</strong> — в любом случае. <strong>Promise.all</strong> ждёт все, <strong>allSettled</strong> ждёт все без падения, <strong>race</strong> берёт первый финиш.</p>
+        <p><strong>async</strong> функция всегда возвращает промис. <strong>await</strong> ставит паузу до результата и позволяет писать почти как синхронный код. Ошибки ловят <strong>try/catch</strong>. Не забывай: несколько await подряд — это очередь, параллель делают через Promise.all.</p>
+      </section>
+
+      <section class="topic" id="js-events">
+        <h2><span class="num">13</span> Всплытие и погружение событий</h2>
+        <p>Клик идёт в три фазы: <strong>погружение</strong> (capturing) с window вниз к цели, затем цель, затем <strong>всплытие</strong> (bubbling) обратно наверх. По умолчанию слушатель сидит на всплытии. Третий аргумент <strong>true</strong> в addEventListener включает фазу погружения.</p>
+        <p><strong>stopPropagation</strong> останавливает дальнейший путь события. <strong>preventDefault</strong> не даёт браузеру сделать действие по умолчанию, например переход по ссылке. Это разные вещи, их часто путают. На собесе любят схему «кто вызовется первым» у вложенных div.</p>
+      </section>
+
+      <section class="topic" id="js-delegate">
+        <h2><span class="num">14</span> Делегирование событий</h2>
+        <p><strong>Делегирование</strong> — один слушатель на родителе ловит клики детей за счёт всплытия. Смотришь <strong>event.target</strong> и понимаешь, по какой кнопке кликнули. Не нужно вешать обработчик на каждую строку списка.</p>
+        <p>Это экономит память и само работает для элементов, которые появились позже. В React часто не думаешь об этом: обработчик и так на родителе в JSX. Но вопрос про «зачем вешать на ul, а не на каждый li» всё ещё живой.</p>
+      </section>
+
+      <section class="topic" id="js-copy">
+        <h2><span class="num">15</span> Копирование объектов</h2>
+        <p><strong>Поверхностная копия</strong> (spread, Object.assign) копирует только первый уровень: вложенный объект остаётся общим. <strong>Глубокая копия</strong> копирует всё дерево. <strong>structuredClone</strong> — современный способ, JSON.parse(JSON.stringify) ломает даты, undefined и функции.</p>
+        <p>Мутация общей ссылки — частый баг в React-стейте. Правило: не меняй старый объект, собери новый. Для стейта обычно хватает spread плюс замена нужной ветки. На собесе могут дать код, где два объекта неожиданно меняются вместе.</p>
+      </section>
+
+      <section class="topic" id="js-map">
+        <h2><span class="num">16</span> Map и Set</h2>
+        <p><strong>Object</strong> — словарь со строковыми (и symbol) ключами. <strong>Map</strong> принимает любой ключ, даже объект, и помнит порядок вставки. <strong>Set</strong> хранит уникальные значения — удобно убрать дубли из массива.</p>
+        <p><strong>WeakMap</strong> и <strong>WeakSet</strong> держат слабые ссылки: если объект больше нигде не нужен, его заберёт сборщик мусора. Их не перебрать циклом, ключ только объект. На практике WeakMap иногда используют для приватных данных «сбоку» от объекта.</p>
+      </section>
+
+      <section class="topic" id="js-debounce">
+        <h2><span class="num">17</span> Debounce и throttle</h2>
+        <p><strong>Debounce</strong> ждёт паузу: функция сработает через N мс после последнего вызова. Так ищут в инпуте: не на каждую букву, а когда человек остановился. <strong>Throttle</strong> говорит «не чаще чем раз в N мс» — так ограничивают скролл и resize.</p>
+        <p>Это не методы языка, а приём. В React debounce часто кладут в хук или берут из lodash, и не забывают очистить таймер в useEffect. Если спросят разницу — нарисуй на пальцах: debounce «после тишины», throttle «раз в интервал».</p>
+      </section>
+
+      <section class="topic" id="ts-types">
+        <h2><span class="num">18</span> Типы данных в TS</h2>
+        <p>TypeScript знает все JS-типы и добавляет свои: <strong>any</strong>, <strong>unknown</strong>, <strong>never</strong>, <strong>void</strong>, <strong>tuple</strong>, <strong>enum</strong>, <strong>literal</strong> типы вроде <strong>"admin" | "user"</strong>. Объекты описывают полями, массивы — <strong>T[]</strong> или <strong>Array&lt;T&gt;</strong>.</p>
+        <p>Типы существуют только на этапе проверки, в браузер они не попадают. <strong>interface</strong> и <strong>type</strong> в быту почти взаимозаменяемы. На собесе ждут, что ты отличишь примитив от объекта, union от intersection и не свалишь всё в any.</p>
+      </section>
+
+      <section class="topic" id="ts-base">
+        <h2><span class="num">19</span> TypeScript: база</h2>
+        <p><strong>interface</strong> описывает форму объекта и умеет мержиться, если объявить дважды. <strong>type</strong> может описать union, кортеж, примитив — он гибче для комбинаций. <strong>Union</strong> — «или»: string | number. <strong>Intersection</strong> — «и»: A &amp; B.</p>
+        <p>Пропсы компонента обычно кладут в interface. Для функций указывают аргументы и возврат. Если TS «орёт» — чаще прав он, чем ты: значит, данные реально могут быть другими. Middle-уровень: без any, с нормальными пропсами и ответами API.</p>
+      </section>
+
+      <section class="topic" id="ts-generic">
+        <h2><span class="num">20</span> Дженерики</h2>
+        <p><strong>Дженерик</strong> — тип-параметр, «коробка T». Функция не знает заранее, что внутри, но обещает: приняла T — вернула T. Так устроены <strong>Array&lt;T&gt;</strong>, <strong>Promise&lt;T&gt;</strong>, свой хук <strong>useState&lt;User&gt;</strong>.</p>
+        <p>Ограничение пишут через <strong>extends</strong>: T extends { id: string }. Так можно читать нужные поля и не открывать тип настежь. На собесе могут попросить типизировать функцию identity или обёртку над fetch. Идея одна: не копировать типы вручную, а переиспользовать параметр.</p>
+      </section>
+
+      <section class="topic" id="ts-any">
+        <h2><span class="num">21</span> any, unknown, never, void</h2>
+        <p><strong>any</strong> отключает проверку — это эвакуация, не тип. <strong>unknown</strong> тоже «что угодно», но сначала нужно сузить проверкой. <strong>void</strong> — функция ничего полезного не возвращает. <strong>never</strong> — функция не заканчивается нормально: вечный цикл, throw, невозможная ветка switch.</p>
+        <p>Если в default у switch стоит never, TS напомнит, когда появится новый вариант union. Для данных с сервера лучше unknown + проверка, чем any. Фраза на собесе: «any — выключатель, unknown — сейф».</p>
+      </section>
+
+      <section class="topic" id="ts-util">
+        <h2><span class="num">22</span> Utility types</h2>
+        <p>Готовые помощники: <strong>Partial&lt;T&gt;</strong> делает поля необязательными, <strong>Required</strong> — обязательными, <strong>Pick</strong> берёт кусок, <strong>Omit</strong> выкидывает поля, <strong>Record&lt;K, V&gt;</strong> — словарь ключ-значение. <strong>ReturnType</strong> достаёт тип возврата функции.</p>
+        <p>Их любят, потому что не надо руками дублировать модели. <strong>Readonly</strong> запрещает запись на уровне типов. Если спросят «как из User сделать форму редактирования» — Partial плюс Pick нужных полей.</p>
+      </section>
+
+      <section class="topic" id="react-arch">
+        <h2><span class="num">23</span> Архитектуры React: FSD и Atomic</h2>
+        <p><strong>FSD (Feature-Sliced Design)</strong> режет проект слоями: app, pages, widgets, features, entities, shared. Фича живёт своей папкой, общее — в shared, нижний слой не знает про верхний. Так проще не превратить проект в свалку components/hooks/utils.</p>
+        <p><strong>Atomic Design</strong> делит UI: атом, молекула, организм, шаблон, страница. Это больше про дизайн-систему и переиспользуемые куски интерфейса, а не про бизнес. FSD отвечает «где лежит фича логина», Atomic — «из каких мелких деталей собрана кнопка». На собесе достаточно сказать: архитектура нужна, чтобы модули имели границы, а не чтобы папки красиво назывались.</p>
+      </section>
+
+      <section class="topic" id="react-css">
+        <h2><span class="num">24</span> Стили в React (CSS)</h2>
+        <p>Можно писать обычный <strong>CSS/SCSS</strong>, <strong>CSS Modules</strong>, <strong>CSS-in-JS</strong> (styled-components, emotion) или утилиты вроде <strong>Tailwind</strong>. Глобальный CSS простой, но классы легко пересекаются между компонентами. Modules на сборке делают имена уникальными — это самый спокойный вариант для больших приложений.</p>
+        <p>CSS-in-JS удобен, когда стиль зависит от пропсов, но тяжелее бандл и DevTools. Tailwind быстро даёт ровный вид, зато JSX обрастает классами. Инлайн-стили в style={{ }} не умеют псевдоклассы и медиазапросы. На middle ждут: как изолируешь стили и что выберешь для команды, а не «единственно верный способ».</p>
+      </section>
+
+      <section class="topic" id="react-dom">
+        <h2><span class="num">25</span> Как React работает с DOM</h2>
+        <p>Компонент не красит DOM руками. Он возвращает описание UI. React строит дерево элементов, сравнивает его с предыдущим и считает патч. Потом в фазе <strong>commit</strong> этот патч применяется к реальному DOM: вставка, удаление, смена атрибутов.</p>
+        <div class="scheme">
+          <div>1. Render: вызвать компонент, получить новое дерево</div>
+          <div>2. Reconciliation: сравнить со старым деревом, найти разницу</div>
+          <div>3. Commit: записать изменения в DOM</div>
+          <div>4. useLayoutEffect → браузер рисует кадр → useEffect</div>
+        </div>
+        <p><strong>useLayoutEffect</strong> бежит после DOM, но до отрисовки кадра — им меряют размеры, чтобы не мигало. <strong>useEffect</strong> бежит после отрисовки, в нём запросы и подписки. В Concurrent Mode render можно прервать, commit — уже нельзя.</p>
+      </section>
+
+      <section class="topic" id="react-vdom">
+        <h2><span class="num">26</span> Virtual DOM и reconciliation</h2>
+        <p><strong>Virtual DOM</strong> — лёгкое JS-описание дерева, не настоящие узлы браузера. Сравнивать объекты быстрее, чем сразу трогать DOM. <strong>Reconciliation</strong> — алгоритм «что изменилось». React сравнивает элементы одного уровня, тип элемента и <strong>key</strong>.</p>
+        <p>Если тип сменился с div на span — старое поддерево выкидывается. Если ключи стабильные, список не пересоздаётся целиком. Virtual DOM не магия скорости сам по себе: выигрыш в том, что мы трогаем DOM точечно. Сегодня ещё говорят про Fiber: работу можно дробить на куски, чтобы не клинить UI.</p>
+      </section>
+
+      <section class="topic" id="react-hooks">
+        <h2><span class="num">27</span> Хуки</h2>
+        <p><strong>useState</strong> хранит локальное состояние и вызывает новый рендер. <strong>useEffect</strong> запускает побочные эффекты и обязан вернуть cleanup, если вешал подписку. <strong>useRef</strong> держит значение без рендера: DOM-узел, таймер, предыдущий проп.</p>
+        <p>Правила: только на верхнем уровне компонента, не в if и циклах, порядок хуков стабилен. <strong>useMemo</strong> кэширует значение, <strong>useCallback</strong> — функцию. Не надо мемоизировать всё подряд: сначала измерь, потом оптимизируй. Кастомный хук — просто функция, которая вызывает другие хуки и прячет повторную логику.</p>
+      </section>
+
+      <section class="topic" id="react-keys">
+        <h2><span class="num">28</span> Ключи в списках</h2>
+        <p><strong>key</strong> — подсказка React, какой элемент списка старый, а какой новый. Ключ должен быть стабильным и уникальным среди соседей. Лучший ключ — id с сервера. Индекс можно, только если список не фильтруется, не сортируется и не вставляется в середину.</p>
+        <p>Плохой ключ даёт баги состояния: инпут «переезжает» на другую строку. key={Math.random()} ещё хуже — элемент каждый раз как новый, стейт сбрасывается. На собесе это любимый практический вопрос после Virtual DOM.</p>
+      </section>
+
+      <section class="topic" id="react-context">
+        <h2><span class="num">29</span> Context</h2>
+        <p><strong>Context</strong> позволяет отдать данные вниз без пропсов через десять компонентов. Сначала создаёшь контекст, кладёшь <strong>Provider</strong>, читаешь через <strong>useContext</strong>. Удобно для темы, локали, текущего пользователя.</p>
+        <p>Минус: если в value новый объект каждый рендер, обновятся все потребители. Поэтому value мемоизируют или режут контекст на части. Context — не стор: для частых и сложных обновлений лучше Zustand/Redux. На собесе хорошо сказать, когда context уместен, а когда уже нет.</p>
+      </section>
+
+      <section class="topic" id="react-forms-ctrl">
+        <h2><span class="num">30</span> Controlled и uncontrolled</h2>
+        <p><strong>Controlled</strong> инпут: значение живёт в React-стейте, onChange его обновляет. Источник правды — React, легко валидировать и блокировать кнопку. <strong>Uncontrolled</strong>: значение сидит в DOM, читаешь через ref, когда надо.</p>
+        <p>Неконтролируемые поля проще для больших форм и файлов. Нельзя смешивать оба режима на одном инпуте без предупреждения. react-hook-form по сути ближе к uncontrolled: меньше ререндеров на каждый символ.</p>
+      </section>
+
+      <section class="topic" id="react-memo">
+        <h2><span class="num">31</span> memo, useMemo, useCallback</h2>
+        <p><strong>React.memo</strong> не рендерит компонент заново, если пропсы поверхностно те же. <strong>useMemo</strong> запоминает результат расчёта. <strong>useCallback</strong> запоминает функцию, чтобы не менялась ссылка и memo-ребёнок не срывался.</p>
+        <p>Это не ускорители по умолчанию: сравнение пропсов тоже стоит времени. Имеет смысл, когда рендер тяжёлый или компонент часто рендерится из-за родителя. Если в проп уходит объект/массив, созданный на месте, memo не поможет — ссылка каждый раз новая.</p>
+      </section>
+
+      <section class="topic" id="store">
+        <h2><span class="num">32</span> Сторы: Zustand и Redux</h2>
+        <p><strong>Стор</strong> — общее клиентское состояние вне дерева компонентов. <strong>Redux Toolkit</strong>: action → reducer → новый state, строгий поток, отличный DevTools, много кода, но предсказуемо. <strong>Zustand</strong>: маленький хук-стор, меньше бойлерплейта, подписываешься селектором только на нужный кусок.</p>
+        <p>Оба требуют <strong>иммутабельности</strong>: не мутируй стейт, верни новый объект. Redux часто берут в больших командах и сложной логике, Zustand — когда нужно быстро и просто. Серверные данные лучше держать в TanStack Query, а в сторе — UI: модалки, фильтры, выбранные id. На собесе вопрос «зачем стор, если есть context» — потому что у стора точечные подписки и меньше лишних рендеров.</p>
+      </section>
+
+      <section class="topic" id="forms">
+        <h2><span class="num">33</span> Формы: React, Zod, Yup</h2>
+        <p>Голая React-форма: каждое поле в useState, onSubmit собирает объект. Для средней и большой формы берут <strong>react-hook-form</strong>: регистрация полей, меньше ререндеров, встроенные ошибки. <strong>Yup</strong> и <strong>Zod</strong> — схемы: описал поля один раз, получил валидацию.</p>
+        <p>Zod дружит с TypeScript: из схемы выводится тип данных, не надо писать интерфейс отдельно. Yup старше и часто встречается в легаси. Типичный связка: схема → resolver → ошибки под инпутами. На собесе ценится фраза: валидация живёт в схеме, а не в куче if внутри onSubmit.</p>
+      </section>
+
+      <section class="topic" id="tanstack">
+        <h2><span class="num">34</span> TanStack Query и React Router</h2>
+        <p><strong>React Router</strong> отвечает за URL: страницы, вложенные роуты, параметры, редиректы, protected routes. <strong>TanStack Query</strong> (React Query) — кэш серверных данных: статус загрузки, ошибки, повтор, инвалидация. Это не замена Redux. Query для данных с бэка, стор для клиентского UI.</p>
+        <p><strong>queryKey</strong> — адрес кэша, вроде ['user', id]. После мутации вызывают <strong>invalidateQueries</strong>, чтобы список обновился. Роутер и Query часто встречаются вместе: id из URL → ключ запроса → fetch. На собесе любят вопрос «как не грузить один и тот же профиль дважды» — ответ: общий кэш Query.</p>
+      </section>
+
+      <section class="topic" id="http">
+        <h2><span class="num">35</span> HTTP базово</h2>
+        <p>Клиент шлёт <strong>запрос</strong>, сервер отвечает. Методы: <strong>GET</strong> читать, <strong>POST</strong> создать, <strong>PUT/PATCH</strong> обновить, <strong>DELETE</strong> удалить. Статусы: 2xx ок, 3xx редирект, 4xx ошибка клиента, 5xx ошибка сервера. В запросе заголовки и опционально тело, часто JSON.</p>
+        <p>HTTP <strong>stateless</strong>: сервер сам по себе не помнит тебя между запросами, поэтому нужны cookie или токен. На фронте ходят через <strong>fetch</strong> или axios. <strong>HTTPS</strong> — тот же протокол, но канал зашифрован. Имеет смысл помнить идемпотентность: повторный GET безопасен, повторный POST может создать вторую запись.</p>
+      </section>
+
+      <section class="topic" id="cors">
+        <h2><span class="num">36</span> CORS</h2>
+        <p><strong>CORS</strong> — правило браузера: страница с одного origin не читает ответ с другого, пока сервер не разрешит. Origin — схема + хост + порт. Сервер отвечает заголовком <strong>Access-Control-Allow-Origin</strong> и иногда разрешает заголовки, методы, credentials.</p>
+        <p>Для «сложных» запросов браузер сначала шлёт <strong>preflight</strong> OPTIONS. CORS не защита сервера, а защита пользователя в браузере. Postman CORS не волнует. На фронте «починить CORS» обычно нельзя честно: это настройка бэка или прокси dev-сервера.</p>
+      </section>
+
+      <section class="topic" id="jwt">
+        <h2><span class="num">37</span> JWT, cookie, Local Storage</h2>
+        <p><strong>JWT</strong> — подписанный токен из трёх частей: header, payload, signature. Фронт его не проверяет криптографией как сервер, он просто хранит и кладёт в запрос. Обычно есть короткий <strong>access</strong> и длинный <strong>refresh</strong>.</p>
+        <p><strong>Local Storage</strong> удобно читать из JS, но любой скрипт на странице тоже сможет — это риск при XSS. <strong>HttpOnly cookie</strong> JS не видит, браузер шлёт её сам: лучше от XSS, но появляется тема CSRF. <strong>sessionStorage</strong> живёт до закрытия вкладки. На собесе не надо фанатеть: скажи плюсы/минусы и что access лучше короткий.</p>
+      </section>
+
+      <section class="topic" id="auth">
+        <h2><span class="num">38</span> Авторизация на фронте</h2>
+        <p>Человек жмёт «Войти», фронт отправляет логин и пароль, сервер отвечает <strong>токеном</strong>. Его сохраняют в памяти, в <strong>Local Storage</strong> или в <strong>cookie</strong>. Дальше каждый запрос к API либо сам несёт токен в заголовке <strong>Authorization</strong>, либо браузер сам прикладывает cookie. Если пришёл <strong>401</strong> — пробуем refresh или отправляем на логин.</p>
+        <p>Страницы делят на открытые и закрытые: нет сессии — редирект на логин. Выход — стереть токен и кэш. Фронт пароль не проверяет и никого «по-настоящему» не пускает: он только помнит сессию и прячет интерфейс. С cookie фронт даже не читает токен, а просто ходит на сервер «как залогиненный».</p>
+      </section>
+
+      <section class="topic" id="xss">
+        <h2><span class="num">39</span> XSS и CSRF</h2>
+        <p><strong>XSS</strong> — чужой JS на твоей странице: украл токен из Local Storage, нарисовал фейковую форму. Лечится экранированием, не вставлять HTML из пользователя как есть, <strong>HttpOnly</strong> cookie, CSP. React по умолчанию экранирует текст в JSX, опасно именно <strong>dangerouslySetInnerHTML</strong>.</p>
+        <p><strong>CSRF</strong> — браузер сам прикладывает cookie к чужому запросу с другого сайта. Лечится <strong>SameSite</strong> cookie, CSRF-токеном, иногда проверкой Origin. Bearer в заголовке CSRF почти не берёт: чужой сайт не прочитает твой токен из JS. Поэтому связка «access в памяти + refresh в HttpOnly cookie» часто звучит как взрослый ответ.</p>
+      </section>
+
+      <section class="topic" id="css-box">
+        <h2><span class="num">40</span> Box model, Flex, Grid</h2>
+        <p>У блока есть content, padding, border, margin. С <strong>box-sizing: border-box</strong> ширина включает padding и border — так живут почти все современные вёрстки. <strong>Flex</strong> — одно направление: ряд или колонка, выравнивание, распределение свободного места. <strong>Grid</strong> — двумерная сетка: и строки, и колонки сразу.</p>
+        <p>Flex берут для шапки, кнопок, списка карточек в ряд. Grid — для раскладки страницы и галерей. <strong>gap</strong> заменяет большинство margin между детьми. На собесе могут попросить сверстать шапку: логотип слева, меню справа — это flex и space-between.</p>
+      </section>
+
+      <section class="topic" id="css-pos">
+        <h2><span class="num">41</span> Позиционирование</h2>
+        <p><strong>static</strong> — обычный поток. <strong>relative</strong> сдвигает относительно себя, якорь для absolute-детей. <strong>absolute</strong> вынимает из потока и позиционирует от ближайшего не-static предка. <strong>fixed</strong> липнет к окну, <strong>sticky</strong> ведёт себя как relative, пока не доскроллишь — потом как fixed.</p>
+        <p>Боковое меню этой страницы — sticky. Модалка часто fixed на весь экран. z-index работает только у позиционированных элементов. Если «элемент уехал непонятно куда» — почти всегда ищут, у какого родителя position не static.</p>
+      </section>
+
+      <section class="topic" id="q-domain">
+        <h2><span class="num">42</span> Когда вбиваем домен в строку — что дальше?</h2>
+        <p>Браузер понимает: это URL, а не поисковый запрос. Дальше ищет IP по имени: кэш браузера → кэш ОС → <strong>DNS</strong>. Когда IP известен, открывается соединение: <strong>TCP</strong> (рукопожатие), для https ещё <strong>TLS</strong>. Потом уходит <strong>HTTP-запрос</strong>, сервер отвечает HTML, CSS, JS, картинками.</p>
+        <p>Пока качается HTML, браузер уже начинает разбор и просит связанные файлы. Потом строит дерево страницы и рисует её. На собесе не надо зубрить все 20 шагов: важна цепочка <strong>DNS → TCP → TLS → HTTP → разбор → отрисовка</strong>.</p>
+        <div class="scheme">
+          <div>1. Разобрать URL: схема, домен, путь</div>
+          <div>2. DNS: имя сайта → IP-адрес</div>
+          <div>3. TCP + TLS: соединение и шифрование</div>
+          <div>4. HTTP: запрос → ответ (HTML и ресурсы)</div>
+          <div>5. Разобрать страницу и нарисовать её</div>
+        </div>
+      </section>
+
+      <section class="topic" id="q-render">
+        <h2><span class="num">43</span> Как из HTML получаются пиксели?</h2>
+        <p>Браузер читает HTML и строит <strong>DOM</strong>, читает CSS и строит <strong>CSSOM</strong>. Из них собирается <strong>render tree</strong>: только то, что реально видно. Потом <strong>layout</strong> считает размеры и координаты, <strong>paint</strong> рисует пиксели, <strong>composite</strong> склеивает слои.</p>
+        <p>JS может остановить разбор HTML, если скрипт без <strong>async/defer</strong> стоит в середине. CSS тоже блокирует отрисовку: без стилей браузер не хочет показывать «голую» страницу. На собесе это зовут <strong>critical rendering path</strong> — путь от байтов до первого кадра.</p>
+      </section>
+
+      <section class="topic" id="q-click">
+        <h2><span class="num">44</span> Что происходит, когда в React кликаем кнопку?</h2>
+        <p>Браузер ловит <strong>click</strong> и отдаёт его обработчику в JSX. Там обычно вызывают <strong>setState</strong> / сеттер из useState. React не сразу лезет в DOM: он планирует новый <strong>рендер</strong> компонента.</p>
+        <p>Компонент вызывается снова, получается новое дерево, React сравнивает его со старым и точечно обновляет DOM. Потом эффекты: сначала <strong>useLayoutEffect</strong>, кадр на экране, потом <strong>useEffect</strong>. Если стейт не изменился, лишней работы может и не быть.</p>
+      </section>
+
+      <section class="topic" id="q-route">
+        <h2><span class="num">45</span> Что происходит при переходе по роуту?</h2>
+        <p>В SPA клик по <strong>Link</strong> не перезагружает страницу. React Router меняет URL через History API и выбирает другой компонент для этого пути. Старая страница размонтируется, новая монтируется, DOM обновляется кусками.</p>
+        <p>Данные часто грузятся уже после смены экрана: <strong>useEffect</strong> или <strong>TanStack Query</strong> по id из URL. Сервер при таком клике новый HTML не отдаёт — он уже отдал приложение один раз. Если человек нажмёт F5, вот тогда браузер снова сходит за HTML по этому адресу, и бэк должен уметь отдать SPA, а не 404.</p>
+      </section>
+
+      <section class="topic" id="q-refresh">
+        <h2><span class="num">46</span> Что происходит при F5 на странице с авторизацией?</h2>
+        <p>Память JS обнуляется: переменные, стейт React, стор в RAM. Браузер заново качает HTML и бандл. Если токен лежал только в переменной — его нет, человека выкинет на логин. Если он в <strong>Local Storage</strong> или <strong>cookie</strong> — приложение при старте читает его и снова ходит в <strong>/me</strong>.</p>
+        <p>Поэтому «остаться в системе после обновления» — это про хранение сессии, а не про магию React. Короткий access мог истечь: тогда фронт берёт refresh и тихо получает новый. На собесе это хороший мостик к теме JWT vs cookie.</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const sidebar = document.getElementById("sidebar");
+    const menuBtn = document.getElementById("menuBtn");
+    const search = document.getElementById("search");
+    const empty = document.getElementById("empty");
+    const links = [...document.querySelectorAll(".nav-link")];
+    const groups = [...document.querySelectorAll("[data-group]")];
+
+    menuBtn.addEventListener("click", () => sidebar.classList.toggle("open"));
+    links.forEach((link) => {
+      link.addEventListener("click", () => sidebar.classList.remove("open"));
+    });
+
+    search.addEventListener("input", () => {
+      const q = search.value.trim().toLowerCase();
+      let visible = 0;
+      links.forEach((link) => {
+        const show = !q || link.textContent.toLowerCase().includes(q);
+        link.style.display = show ? "" : "none";
+        if (show) visible += 1;
+      });
+      groups.forEach((group) => {
+        const has = [...group.querySelectorAll(".nav-link")].some((a) => a.style.display !== "none");
+        group.style.display = has ? "" : "none";
+      });
+      empty.style.display = visible ? "none" : "block";
+    });
+
+    document.getElementById("randomBtn").addEventListener("click", () => {
+      const visible = links.filter((a) => a.style.display !== "none");
+      const pick = visible[Math.floor(Math.random() * visible.length)];
+      if (pick) {
+        pick.click();
+        document.querySelector(pick.getAttribute("href"))?.scrollIntoView({ behavior: "smooth" });
+      }
+    });
+
+    const map = new Map(links.map((a) => [a.getAttribute("href").slice(1), a]));
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        links.forEach((a) => a.classList.remove("active"));
+        map.get(entry.target.id)?.classList.add("active");
+      });
+    }, { rootMargin: "-20% 0px -70% 0px" });
+
+    document.querySelectorAll("section.topic").forEach((section) => observer.observe(section));
+  </script>
+</body>
+</html>
