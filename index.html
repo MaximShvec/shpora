@@ -183,7 +183,26 @@
     }
 
     .topic p { margin: 0 0 0.7rem; }
-    .topic p:last-child { margin-bottom: 0; }
+    .topic > p:last-of-type { margin-bottom: 0; }
+
+    .qa {
+      margin-top: 1rem;
+      padding: 0.8rem 0.9rem;
+      border-top: 1px dashed var(--line);
+      background: rgba(11, 16, 23, 0.55);
+      border-radius: 0 0 12px 12px;
+    }
+
+    .qa-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .qa p { margin: 0 0 0.4rem; font-size: 0.92rem; }
+    .qa p:last-child { margin-bottom: 0; color: var(--muted); }
 
     strong {
       color: var(--keyword);
@@ -282,7 +301,7 @@
           <a class="nav-link" href="#react-arch">FSD Atomic</a>
           <a class="nav-link" href="#react-css">стили CSS</a>
           <a class="nav-link" href="#react-dom">React и DOM</a>
-          <a class="nav-link" href="#react-vdom">virtual DOM</a>
+          <a class="nav-link" href="#react-vdom">virtual DOM fiber</a>
           <a class="nav-link" href="#react-hooks">хуки</a>
           <a class="nav-link" href="#react-keys">ключи</a>
           <a class="nav-link" href="#react-context">context</a>
@@ -350,8 +369,14 @@
 
       <section class="topic" id="js-var">
         <h2><span class="num">02</span> var, let, const</h2>
-        <p><strong>var</strong> живёт в функции, всплывает и его можно объявить дважды — сейчас почти не используют. <strong>let</strong> и <strong>const</strong> живут в блоке <strong>{ }</strong> и до строки объявления находятся в <strong>временной мёртвой зоне</strong>: обратиться рано нельзя.</p>
-        <p><strong>const</strong> запрещает менять саму переменную, но поля объекта внутри менять можно. Для значений, которые переназначаешь — let, для остального — const. Если на собесе спросят «что выбрать по умолчанию» — говори <strong>const</strong>.</p>
+        <p><strong>var</strong> живёт во всей функции, даже если написан внутри if. Он всплывает и сначала равен undefined, его можно объявить дважды. В нестрогом режиме глобальный var ещё и становится полем window — поэтому его почти не используют.</p>
+        <p><strong>let</strong> и <strong>const</strong> живут в блоке <strong>{ }</strong>. До своей строки они уже «заняты», но доступа нет — это <strong>временная мёртвая зона</strong>. Повторно объявить то же имя в одном блоке нельзя. <strong>const</strong> запрещает подменить саму переменную: число или строку не переназначишь. Если внутри объект — поля менять можно, заморожена только ссылка.</p>
+        <p>В работе по умолчанию берут <strong>const</strong>. <strong>let</strong> — когда значение реально переназначаешь: счётчик, флаг, накопленный результат. На собесе часто дают код с var в цикле или обращение к let выше объявления.</p>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Почему const не защищает объект от изменений?</p>
+          <p><strong>О:</strong> const держит ссылку. Саму переменную не переприсвоишь, а поля внутри объекта — можно.</p>
+        </div>
       </section>
 
       <section class="topic" id="js-equal">
@@ -368,14 +393,24 @@
 
       <section class="topic" id="js-hoisting">
         <h2><span class="num">05</span> Всплытие (hoisting)</h2>
-        <p><strong>Всплытие</strong> — движок как будто поднимает объявления наверх области видимости. У <strong>var</strong> поднимается переменная со значением undefined. У <strong>function declaration</strong> поднимается вся функция, её можно вызвать выше по коду.</p>
-        <p>У <strong>let</strong> и <strong>const</strong> тоже есть всплытие, но без доступа до строки объявления. <strong>Function expression</strong> и стрелки ведут себя как переменные, а не как declaration. На собесе часто дают код «что выведется» с функцией и var до объявления.</p>
+        <p><strong>Всплытие</strong> — движок сначала регистрирует объявления, потом выполняет код сверху вниз. Поэтому кажется, будто объявления «поднялись». У <strong>var</strong> поднимается имя со значением <strong>undefined</strong>: переменная уже есть, значения ещё нет. У <strong>function declaration</strong> поднимается вся функция — её реально можно вызвать выше по файлу.</p>
+        <p>У <strong>let</strong>, <strong>const</strong> и <strong>class</strong> имя тоже резервируется, но до своей строки доступ закрыт: будет ошибка, не undefined. <strong>Function expression</strong> и стрелка — это просто переменные. Если они на const, выше вызова их ещё нет. На собесе почти всегда дают «что выведется», если функцию или var трогают до объявления.</p>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Почему function declaration можно вызвать выше, а стрелку нельзя?</p>
+          <p><strong>О:</strong> Declaration всплывает целиком. Стрелка живёт как переменная: до своей строки её ещё нет.</p>
+        </div>
       </section>
 
       <section class="topic" id="js-closure">
         <h2><span class="num">06</span> Замыкания</h2>
-        <p><strong>Замыкание</strong> — функция помнит переменные той области, где её создали, даже если эту область уже «закончили». Так работают счётчики, приватные поля в модуле и колбэки, которые используют данные снаружи.</p>
-        <p>Классическая ловушка: цикл с <strong>var</strong> и setTimeout — все колбэки видят одно и то же i. С <strong>let</strong> у каждой итерации своя переменная. Замыкание не копия значения, а живая ссылка на окружение. Если внутри меняешь переменную, все замкнутые функции видят новое значение.</p>
+        <p><strong>Замыкание</strong> — функция помнит переменные той области, где её создали, даже если снаружи эта область уже закончилась. Это не магия и не копия: функция держит <strong>живую ссылку</strong> на окружение. Поменял переменную позже — все замкнутые функции видят новое значение.</p>
+        <p>Так делают счётчик, «приватные» данные модуля и колбэки, которым нужны данные снаружи. Память тоже держится: пока функция жива, живы и замкнутые переменные. Классическая ловушка: цикл с <strong>var</strong> и setTimeout — все колбэки смотрят на одно i. С <strong>let</strong> у каждой итерации своя переменная.</p>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Замыкание копирует значение переменной?</p>
+          <p><strong>О:</strong> Нет. Это ссылка на окружение. Изменил переменную — подписчики видят уже новое.</p>
+        </div>
       </section>
 
       <section class="topic" id="js-this">
@@ -392,8 +427,13 @@
 
       <section class="topic" id="js-proto">
         <h2><span class="num">09</span> Прототипы</h2>
-        <p>У объекта есть скрытая ссылка <strong>[[Prototype]]</strong>, её видно как <strong>__proto__</strong> или через <strong>Object.getPrototypeOf</strong>. Если свойства нет у самого объекта, JS идёт по <strong>цепочке прототипов</strong>, пока не найдёт или не упрётся в null.</p>
-        <p>Так у массивов появляется <strong>map</strong>: он лежит на <strong>Array.prototype</strong>. <strong>class</strong> в JS — сахар над прототипами. <strong>hasOwn</strong> проверяет «это моё поле», а <strong>in</strong> смотрит ещё и в прототип. На middle хватит объяснить цепочку и чем свойство объекта отличается от свойства прототипа.</p>
+        <p>У объекта есть скрытая ссылка <strong>[[Prototype]]</strong>. Её смотрят через <strong>Object.getPrototypeOf</strong>, старое имя — <strong>__proto__</strong>. Нет своего свойства — JS идёт по <strong>цепочке прототипов</strong>, пока не найдёт имя или не упрётся в null. Так у всех массивов появляется <strong>map</strong>: метод один, лежит на <strong>Array.prototype</strong>, а не копируется в каждый массив.</p>
+        <p><strong>class</strong> — сахар над этой схемой: методы класса живут на прототипе и шарятся, поля экземпляра — свои. <strong>hasOwn</strong> спрашивает «это моё поле», оператор <strong>in</strong> смотрит ещё и вверх по цепочке. На middle ждут цепочку и разницу: своё свойство vs унаследованное.</p>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Где лежит метод массива map?</p>
+          <p><strong>О:</strong> На Array.prototype. Массив находит его по цепочке, это не копия внутри каждого массива.</p>
+        </div>
       </section>
 
       <section class="topic" id="js-recursion">
@@ -416,14 +456,29 @@
 
       <section class="topic" id="js-promise">
         <h2><span class="num">12</span> Промисы и async/await</h2>
-        <p><strong>Promise</strong> — обёртка над будущим результатом: pending, fulfilled, rejected. <strong>then</strong> обрабатывает успех, <strong>catch</strong> — ошибку, <strong>finally</strong> — в любом случае. <strong>Promise.all</strong> ждёт все, <strong>allSettled</strong> ждёт все без падения, <strong>race</strong> берёт первый финиш.</p>
-        <p><strong>async</strong> функция всегда возвращает промис. <strong>await</strong> ставит паузу до результата и позволяет писать почти как синхронный код. Ошибки ловят <strong>try/catch</strong>. Не забывай: несколько await подряд — это очередь, параллель делают через Promise.all.</p>
+        <p><strong>Promise</strong> — коробка на будущий результат. Состояния: <strong>pending</strong>, <strong>fulfilled</strong>, <strong>rejected</strong>. Один промис меняет состояние один раз. <strong>then</strong> — успех, <strong>catch</strong> — ошибка, <strong>finally</strong> — в любом случае. Цепочка then возвращает новый промис, поэтому ошибки можно поймать внизу одним catch.</p>
+        <p><strong>Promise.all</strong> ждёт все и падает от первой ошибки. <strong>allSettled</strong> дождётся всех, даже если кто-то упал. <strong>race</strong> берёт первый финиш, <strong>any</strong> — первый успех. <strong>async</strong> функция всегда возвращает промис. <strong>await</strong> ставит паузу и разворачивает результат, ошибки ловят <strong>try/catch</strong>. Несколько await подряд — очередь. Параллель — через Promise.all.</p>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Почему несколько await подряд медленнее, чем Promise.all?</p>
+          <p><strong>О:</strong> await ждёт по одному. all запускает все сразу и ждёт общий финиш.</p>
+        </div>
       </section>
 
       <section class="topic" id="js-events">
         <h2><span class="num">13</span> Всплытие и погружение событий</h2>
-        <p>Клик идёт в три фазы: <strong>погружение</strong> (capturing) с window вниз к цели, затем цель, затем <strong>всплытие</strong> (bubbling) обратно наверх. По умолчанию слушатель сидит на всплытии. Третий аргумент <strong>true</strong> в addEventListener включает фазу погружения.</p>
-        <p><strong>stopPropagation</strong> останавливает дальнейший путь события. <strong>preventDefault</strong> не даёт браузеру сделать действие по умолчанию, например переход по ссылке. Это разные вещи, их часто путают. На собесе любят схему «кто вызовется первым» у вложенных div.</p>
+        <p>Клик идёт в три фазы. Сначала <strong>погружение</strong> (capturing): от window вниз к цели. Потом сама цель. Потом <strong>всплытие</strong> (bubbling): обратно наверх. По умолчанию слушатель сидит на всплытии. Третий аргумент <strong>true</strong> в addEventListener включает погружение.</p>
+        <p><strong>event.target</strong> — кто кликнут, <strong>currentTarget</strong> — на ком висит слушатель. <strong>stopPropagation</strong> обрывает дальнейший путь по дереву. <strong>preventDefault</strong> не трогает путь, а отменяет действие браузера: переход по ссылке, отправку формы. Это разные кнопки, их часто путают. На собесе рисуют вложенные div и спрашивают порядок вызовов.</p>
+        <div class="scheme">
+          <div>window → html → body → … → цель (погружение)</div>
+          <div>цель</div>
+          <div>цель → … → body → html → window (всплытие)</div>
+        </div>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Чем stopPropagation отличается от preventDefault?</p>
+          <p><strong>О:</strong> Первый стопит путь события по дереву. Второй — действие браузера, например переход по ссылке.</p>
+        </div>
       </section>
 
       <section class="topic" id="js-delegate">
@@ -434,8 +489,13 @@
 
       <section class="topic" id="js-copy">
         <h2><span class="num">15</span> Копирование объектов</h2>
-        <p><strong>Поверхностная копия</strong> (spread, Object.assign) копирует только первый уровень: вложенный объект остаётся общим. <strong>Глубокая копия</strong> копирует всё дерево. <strong>structuredClone</strong> — современный способ, JSON.parse(JSON.stringify) ломает даты, undefined и функции.</p>
-        <p>Мутация общей ссылки — частый баг в React-стейте. Правило: не меняй старый объект, собери новый. Для стейта обычно хватает spread плюс замена нужной ветки. На собесе могут дать код, где два объекта неожиданно меняются вместе.</p>
+        <p>Присвоение <strong>obj2 = obj1</strong> копирует ссылку: два имени, один объект в памяти. <strong>Поверхностная копия</strong> — spread или Object.assign: верхний уровень новый, вложенные объекты общие. <strong>Глубокая копия</strong> копирует всё дерево. Современный способ — <strong>structuredClone</strong>. Старый JSON.parse(JSON.stringify) ломает даты, undefined, функции и Map.</p>
+        <p>В React это важно: если мутировать старый объект, ссылка та же, и рендер может не увидеть изменение. Правило: не меняй прошлое состояние, собери новое. Обычно хватает spread и замены нужной ветки, а не полного глубокого клона всего стора. На собесе дают два объекта, которые «неожиданно» меняются вместе — это общая ссылка.</p>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Почему после spread вложенный объект всё равно общий?</p>
+          <p><strong>О:</strong> Spread копирует только первый уровень. Внутри остаётся та же ссылка.</p>
+        </div>
       </section>
 
       <section class="topic" id="js-map">
@@ -452,8 +512,13 @@
 
       <section class="topic" id="ts-types">
         <h2><span class="num">18</span> Типы данных в TS</h2>
-        <p>TypeScript знает все JS-типы и добавляет свои: <strong>any</strong>, <strong>unknown</strong>, <strong>never</strong>, <strong>void</strong>, <strong>tuple</strong>, <strong>enum</strong>, <strong>literal</strong> типы вроде <strong>"admin" | "user"</strong>. Объекты описывают полями, массивы — <strong>T[]</strong> или <strong>Array&lt;T&gt;</strong>.</p>
-        <p>Типы существуют только на этапе проверки, в браузер они не попадают. <strong>interface</strong> и <strong>type</strong> в быту почти взаимозаменяемы. На собесе ждут, что ты отличишь примитив от объекта, union от intersection и не свалишь всё в any.</p>
+        <p>TypeScript знает все JS-типы и добавляет свои. Примитивы те же: строка, число, boolean, null, undefined, bigint, symbol. Сверху: <strong>any</strong>, <strong>unknown</strong>, <strong>never</strong>, <strong>void</strong>, <strong>tuple</strong> (массив фиксированной длины и состава), <strong>enum</strong>, <strong>literal</strong> вроде <strong>"admin" | "user"</strong>. Объект описывают полями, массив — <strong>T[]</strong>.</p>
+        <p>Типы живут только на проверке. <strong>tsc</strong> их стирает, в браузере остаётся обычный JS. TS смотрит на форму объекта, а не на «родословную»: подошёл по полям — тип сошёлся. На собесе ждут: примитив vs объект, union vs intersection, tuple vs обычный массив, и чтобы не было any на всё подряд.</p>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Попадают ли типы TypeScript в браузер?</p>
+          <p><strong>О:</strong> Нет. Компилятор их стирает. В рантайме остаётся обычный JavaScript.</p>
+        </div>
       </section>
 
       <section class="topic" id="ts-base">
@@ -494,32 +559,53 @@
 
       <section class="topic" id="react-dom">
         <h2><span class="num">25</span> Как React работает с DOM</h2>
-        <p>Компонент не красит DOM руками. Он возвращает описание UI. React строит дерево элементов, сравнивает его с предыдущим и считает патч. Потом в фазе <strong>commit</strong> этот патч применяется к реальному DOM: вставка, удаление, смена атрибутов.</p>
+        <p>Компонент сам узлы не создаёт и не красит. Он возвращает описание UI. React вызывает функцию, получает новое дерево и сравнивает его со старым. Это ещё не экран: идёт расчёт, что вставить, удалить или поменять. Несколько setState подряд React часто <strong>батчит</strong> в один проход, чтобы не дёргать DOM по каждому клику.</p>
+        <p>Потом фаза <strong>commit</strong>: патч пишется в настоящий DOM. После записи сначала <strong>useLayoutEffect</strong> — ещё до кадра, им меряют размеры, чтобы не мигнуло. Браузер рисует. Затем <strong>useEffect</strong>: запросы, подписки, таймеры. В Concurrent Mode расчёт дерева можно прервать и пересчитать. Commit уже трогает DOM, его не прерывают.</p>
         <div class="scheme">
           <div>1. Render: вызвать компонент, получить новое дерево</div>
-          <div>2. Reconciliation: сравнить со старым деревом, найти разницу</div>
-          <div>3. Commit: записать изменения в DOM</div>
-          <div>4. useLayoutEffect → браузер рисует кадр → useEffect</div>
+          <div>2. Reconciliation: сравнить со старым, найти разницу</div>
+          <div>3. Commit: записать изменения в настоящий DOM</div>
+          <div>4. useLayoutEffect → кадр на экране → useEffect</div>
         </div>
-        <p><strong>useLayoutEffect</strong> бежит после DOM, но до отрисовки кадра — им меряют размеры, чтобы не мигало. <strong>useEffect</strong> бежит после отрисовки, в нём запросы и подписки. В Concurrent Mode render можно прервать, commit — уже нельзя.</p>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Можно ли прервать обновление, когда React уже пишет в DOM?</p>
+          <p><strong>О:</strong> Нет. Render в Concurrent можно поставить на паузу. Commit синхронный: DOM уже меняют.</p>
+        </div>
       </section>
 
       <section class="topic" id="react-vdom">
-        <h2><span class="num">26</span> Virtual DOM и reconciliation</h2>
-        <p><strong>Virtual DOM</strong> — лёгкое JS-описание дерева, не настоящие узлы браузера. Сравнивать объекты быстрее, чем сразу трогать DOM. <strong>Reconciliation</strong> — алгоритм «что изменилось». React сравнивает элементы одного уровня, тип элемента и <strong>key</strong>.</p>
-        <p>Если тип сменился с div на span — старое поддерево выкидывается. Если ключи стабильные, список не пересоздаётся целиком. Virtual DOM не магия скорости сам по себе: выигрыш в том, что мы трогаем DOM точечно. Сегодня ещё говорят про Fiber: работу можно дробить на куски, чтобы не клинить UI.</p>
+        <h2><span class="num">26</span> Virtual DOM, reconciliation и Fiber</h2>
+        <p><strong>Virtual DOM</strong> — лёгкое JS-описание дерева, не узлы браузера. Сравнивать объекты дешевле, чем сразу трогать настоящий DOM. <strong>Reconciliation</strong> — алгоритм «что изменилось». React смотрит один уровень, тип элемента и <strong>key</strong>. Тип сменился с div на span — старое поддерево выкидывают. Ключи стабильные — список не пересоздают целиком.</p>
+        <p><strong>Fiber</strong> — внутренняя архитектура с React 16. Каждый элемент работы — узел Fiber, из них собрано дерево. Работу можно резать на куски: посчитал кусок, отдал кадр браузеру, продолжил. Так вкладка не клинит на большом обновлении. Есть текущее дерево и дерево «в работе»; после commit они меняются местами. У обновлений разный приоритет: ввод важнее, чем тихий пересчёт списка.</p>
+        <p>Virtual DOM — снимок «как должно выглядеть». Fiber — как React эту работу планирует и ставит на паузу. Скорость не в том, что виртуальное дерево волшебное, а в том, что настоящий DOM трогают точечно и не одной длинной паузой.</p>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Зачем Fiber, если уже есть Virtual DOM?</p>
+          <p><strong>О:</strong> Virtual DOM — описание дерева. Fiber — способ дробить работу, ставить на паузу и не вешать вкладку.</p>
+        </div>
       </section>
 
       <section class="topic" id="react-hooks">
         <h2><span class="num">27</span> Хуки</h2>
-        <p><strong>useState</strong> хранит локальное состояние и вызывает новый рендер. <strong>useEffect</strong> запускает побочные эффекты и обязан вернуть cleanup, если вешал подписку. <strong>useRef</strong> держит значение без рендера: DOM-узел, таймер, предыдущий проп.</p>
-        <p>Правила: только на верхнем уровне компонента, не в if и циклах, порядок хуков стабилен. <strong>useMemo</strong> кэширует значение, <strong>useCallback</strong> — функцию. Не надо мемоизировать всё подряд: сначала измерь, потом оптимизируй. Кастомный хук — просто функция, которая вызывает другие хуки и прячет повторную логику.</p>
+        <p><strong>useState</strong> хранит локальное состояние и просит новый рендер. <strong>useEffect</strong> — побочные эффекты после отрисовки: запрос, подписка, таймер. Если повесил подписку — верни <strong>cleanup</strong>, иначе будет утечка. <strong>useLayoutEffect</strong> тот же эффект, но до кадра. <strong>useRef</strong> держит значение без рендера: DOM-узел, id таймера, прошлый проп.</p>
+        <p>Правила: только сверху компонента или кастомного хука, не в if и циклах. React помнит хуки <strong>по порядку вызова</strong>. Сбил порядок — стейт поедет на соседний хук. <strong>useMemo</strong> кэширует значение, <strong>useCallback</strong> — функцию. Не мемоизируй всё подряд. Кастомный хук — обычная функция, которая вызывает другие хуки и прячет повтор. Частая ловушка — <strong>устаревшее замыкание</strong>: эффект захватил старое значение, потому что его нет в зависимостях.</p>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Почему хуки нельзя класть в if?</p>
+          <p><strong>О:</strong> React отличает хуки по порядку. Условие сбивает очередь — значения переедут на чужие хуки.</p>
+        </div>
       </section>
 
       <section class="topic" id="react-keys">
         <h2><span class="num">28</span> Ключи в списках</h2>
-        <p><strong>key</strong> — подсказка React, какой элемент списка старый, а какой новый. Ключ должен быть стабильным и уникальным среди соседей. Лучший ключ — id с сервера. Индекс можно, только если список не фильтруется, не сортируется и не вставляется в середину.</p>
-        <p>Плохой ключ даёт баги состояния: инпут «переезжает» на другую строку. key={Math.random()} ещё хуже — элемент каждый раз как новый, стейт сбрасывается. На собесе это любимый практический вопрос после Virtual DOM.</p>
+        <p><strong>key</strong> — имя элемента для reconciliation. React не сравнивает «первого с первым по смыслу», он ищет тот же ключ среди соседей. Нашёл — обновил. Не нашёл — создал заново, старый размонтировал вместе со стейтом. Ключ уникален среди братьев, по всему приложению повторяться может.</p>
+        <p>Лучший ключ — стабильный <strong>id</strong> с сервера. Индекс годится, только если список не сортируют, не фильтруют и не вставляют в середину. Иначе после перестановки индекс указывает на другого человека, и инпут «переезжает». Случайный ключ ещё хуже: каждый рендер элемент как новый, стейт сбрасывается, фокус прыгает.</p>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Почему нельзя ставить индекс ключом в списке, который сортируют?</p>
+          <p><strong>О:</strong> После сортировки тот же индекс — уже другой элемент. React путает строки, стейт переезжает.</p>
+        </div>
       </section>
 
       <section class="topic" id="react-context">
@@ -542,8 +628,14 @@
 
       <section class="topic" id="store">
         <h2><span class="num">32</span> Сторы: Zustand и Redux</h2>
-        <p><strong>Стор</strong> — общее клиентское состояние вне дерева компонентов. <strong>Redux Toolkit</strong>: action → reducer → новый state, строгий поток, отличный DevTools, много кода, но предсказуемо. <strong>Zustand</strong>: маленький хук-стор, меньше бойлерплейта, подписываешься селектором только на нужный кусок.</p>
-        <p>Оба требуют <strong>иммутабельности</strong>: не мутируй стейт, верни новый объект. Redux часто берут в больших командах и сложной логике, Zustand — когда нужно быстро и просто. Серверные данные лучше держать в TanStack Query, а в сторе — UI: модалки, фильтры, выбранные id. На собесе вопрос «зачем стор, если есть context» — потому что у стора точечные подписки и меньше лишних рендеров.</p>
+        <p><strong>Стор</strong> — общее клиентское состояние вне дерева компонентов. Не прокидываешь пропсы через десять уровней и не будишь всё дерево, как часто бывает с Context. В сторе обычно UI: модалки, фильтры, выбранные id. Данные с сервера спокойнее держать в TanStack Query.</p>
+        <p><strong>Redux Toolkit</strong> — строгий поток: компонент диспатчит <strong>action</strong>, <strong>reducer</strong> по типу действия возвращает новый state, подписчики обновляются. Есть слайсы, DevTools, middleware. Много церемонии, зато предсказуемо в большой команде. <strong>Zustand</strong> — маленький хук-стор без провайдера на всё приложение. Пишешь функции прямо в сторе, компонент берёт селектором только свой кусок и ререндерится только от него.</p>
+        <p>Оба хотят <strong>иммутабельности</strong>: старый объект не мутируют, отдают новый. В RTK часто помогает Immer, в Zustand тоже можно. На собесе «зачем стор, если есть context»: у стора точечные подписки. Context при новом value будит всех потребителей.</p>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Чем Zustand удобнее Context для частого стейта?</p>
+          <p><strong>О:</strong> Селектор подписывает только на кусок данных. Context при смене value обычно ререндерит всех потребителей.</p>
+        </div>
       </section>
 
       <section class="topic" id="forms">
@@ -566,20 +658,36 @@
 
       <section class="topic" id="cors">
         <h2><span class="num">36</span> CORS</h2>
-        <p><strong>CORS</strong> — правило браузера: страница с одного origin не читает ответ с другого, пока сервер не разрешит. Origin — схема + хост + порт. Сервер отвечает заголовком <strong>Access-Control-Allow-Origin</strong> и иногда разрешает заголовки, методы, credentials.</p>
-        <p>Для «сложных» запросов браузер сначала шлёт <strong>preflight</strong> OPTIONS. CORS не защита сервера, а защита пользователя в браузере. Postman CORS не волнует. На фронте «починить CORS» обычно нельзя честно: это настройка бэка или прокси dev-сервера.</p>
+        <p><strong>CORS</strong> — правило браузера. Страница с одного <strong>origin</strong> не читает ответ с другого, пока сервер не разрешит. Origin — схема + хост + порт. Поэтому localhost:3000 и localhost:8000 для браузера уже разные миры. Сервер отвечает <strong>Access-Control-Allow-Origin</strong> и при необходимости разрешает методы, заголовки, cookie.</p>
+        <p>Простой GET часто идёт сразу. Для «сложного» запроса браузер сначала шлёт <strong>preflight</strong> OPTIONS: «можно так ходить?». Звёздочка в origin не сочетается с cookie: если нужны credentials, сервер должен назвать конкретный origin. CORS не защита API. Это защита пользователя в браузере. Postman его не проверяет. С фронта честно «починить» нельзя: это бэк или прокси dev-сервера.</p>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Почему в Postman запрос проходит, а из браузера нет?</p>
+          <p><strong>О:</strong> CORS проверяет только браузер. Postman — не страница на чужом origin, ему эти заголовки не нужны.</p>
+        </div>
       </section>
 
       <section class="topic" id="jwt">
         <h2><span class="num">37</span> JWT, cookie, Local Storage</h2>
-        <p><strong>JWT</strong> — подписанный токен из трёх частей: header, payload, signature. Фронт его не проверяет криптографией как сервер, он просто хранит и кладёт в запрос. Обычно есть короткий <strong>access</strong> и длинный <strong>refresh</strong>.</p>
-        <p><strong>Local Storage</strong> удобно читать из JS, но любой скрипт на странице тоже сможет — это риск при XSS. <strong>HttpOnly cookie</strong> JS не видит, браузер шлёт её сам: лучше от XSS, но появляется тема CSRF. <strong>sessionStorage</strong> живёт до закрытия вкладки. На собесе не надо фанатеть: скажи плюсы/минусы и что access лучше короткий.</p>
+        <p><strong>JWT</strong> — три куска через точку: header, payload, signature. Это не шифр, а подпись: payload можно декодировать, но подделать без секрета сервера нельзя. Фронт криптографию обычно не проверяет, он хранит токен и кладёт в запрос. Короткий <strong>access</strong> ходит в API. Длинный <strong>refresh</strong> нужен, чтобы тихо получить новый access, когда старый истёк.</p>
+        <p><strong>Память JS</strong> (переменная, стор в RAM) — скрипт с страницы токен оттуда всё равно видит, пока вкладка жива, но после F5 его нет, и его не прочитать из другой вкладки. Это самый спокойный вариант для access. <strong>Local Storage</strong> переживает обновление, любой JS на странице его читает — при XSS токен унесут. <strong>sessionStorage</strong> живёт до закрытия вкладки. <strong>HttpOnly cookie</strong> JS не видит, браузер шлёт сам: лучше от XSS, но появляется CSRF. Cookie ещё помечают <strong>Secure</strong> и <strong>SameSite</strong>.</p>
+        <p>На собесе не надо клясться одним хранилищем. Скажи плюсы и минусы и что access лучше короткий. Частый взрослый ответ: access в памяти, refresh в HttpOnly cookie.</p>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Почему access не кладут надолго в Local Storage?</p>
+          <p><strong>О:</strong> Любой XSS его прочитает и унесёт. Короткий access в памяти безопаснее, refresh — в HttpOnly cookie.</p>
+        </div>
       </section>
 
       <section class="topic" id="auth">
         <h2><span class="num">38</span> Авторизация на фронте</h2>
-        <p>Человек жмёт «Войти», фронт отправляет логин и пароль, сервер отвечает <strong>токеном</strong>. Его сохраняют в памяти, в <strong>Local Storage</strong> или в <strong>cookie</strong>. Дальше каждый запрос к API либо сам несёт токен в заголовке <strong>Authorization</strong>, либо браузер сам прикладывает cookie. Если пришёл <strong>401</strong> — пробуем refresh или отправляем на логин.</p>
-        <p>Страницы делят на открытые и закрытые: нет сессии — редирект на логин. Выход — стереть токен и кэш. Фронт пароль не проверяет и никого «по-настоящему» не пускает: он только помнит сессию и прячет интерфейс. С cookie фронт даже не читает токен, а просто ходит на сервер «как залогиненный».</p>
+        <p>Логин и пароль фронт шлёт сам: обычно <strong>fetch</strong> или <strong>axios</strong>, метод <strong>POST</strong>, тело JSON, обязательно <strong>HTTPS</strong>. В адресную строку и query их не кладут — это светится в истории и логах. Сервер отвечает токеном или сам ставит cookie. Дальше к API ходят уже с сессией: либо заголовок <strong>Authorization: Bearer</strong>, либо браузер сам прикладывает cookie, если запрос с <strong>credentials</strong>.</p>
+        <p>Где хранить. <strong>Память</strong> — лучшее место для короткого access: после F5 его нет, с диска его не вытянуть. Чтобы человек не логинился снова, refresh кладут в <strong>HttpOnly cookie</strong>. Local Storage берут часто «потому что просто», но при XSS токен унесут. Axios часто вешает <strong>interceptor</strong>: сам подставляет заголовок и ловит 401. Страницы делят на открытые и закрытые: нет сессии — на логин. Выход — стереть токен и кэш. Фронт пароль не проверяет: он только помнит сессию и прячет UI.</p>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Чем фронт отправляет логин и куда лучше класть токен?</p>
+          <p><strong>О:</strong> POST через fetch или axios, JSON по HTTPS. Access — в память, refresh — в HttpOnly cookie. Так меньше шансов отдать сессию через XSS.</p>
+        </div>
       </section>
 
       <section class="topic" id="xss">
@@ -602,14 +710,20 @@
 
       <section class="topic" id="q-domain">
         <h2><span class="num">42</span> Когда вбиваем домен в строку — что дальше?</h2>
-        <p>Браузер понимает: это URL, а не поисковый запрос. Дальше ищет IP по имени: кэш браузера → кэш ОС → <strong>DNS</strong>. Когда IP известен, открывается соединение: <strong>TCP</strong> (рукопожатие), для https ещё <strong>TLS</strong>. Потом уходит <strong>HTTP-запрос</strong>, сервер отвечает HTML, CSS, JS, картинками.</p>
-        <p>Пока качается HTML, браузер уже начинает разбор и просит связанные файлы. Потом строит дерево страницы и рисует её. На собесе не надо зубрить все 20 шагов: важна цепочка <strong>DNS → TCP → TLS → HTTP → разбор → отрисовка</strong>.</p>
+        <p>Браузер понимает: это URL, а не поисковый запрос. Разбирает схему, домен, путь. Потом ищет IP: кэш браузера → кэш ОС → <strong>DNS</strong>. Имя сайта само по себе в сеть не ходит, нужен адрес машины.</p>
+        <p><strong>TCP</strong> открывает надёжный канал до этого IP и порта. Сначала рукопожатие из трёх шагов: «привет» (SYN), «принял, вот и я» (SYN-ACK), «ок, работаем» (ACK). После этого байты идут по порядку, потерянное просят ещё раз. Это ещё не шифр и не сайт, только труба.</p>
+        <p><strong>TLS</strong> надевается на эту трубу, если схема https. Браузер проверяет сертификат: тот ли это сайт и доверяем ли мы тому, кто подписал. Потом стороны договариваются о ключах и дальше шифруют трафик. HTTP после этого становится <strong>HTTPS</strong>: тот же запрос-ответ, но его не прочитать по дороге. Затем уходит HTTP-запрос, приходит HTML, браузер тянет CSS и JS и рисует страницу.</p>
         <div class="scheme">
           <div>1. Разобрать URL: схема, домен, путь</div>
-          <div>2. DNS: имя сайта → IP-адрес</div>
-          <div>3. TCP + TLS: соединение и шифрование</div>
-          <div>4. HTTP: запрос → ответ (HTML и ресурсы)</div>
-          <div>5. Разобрать страницу и нарисовать её</div>
+          <div>2. DNS: имя сайта → IP</div>
+          <div>3. TCP: рукопожатие, надёжный канал</div>
+          <div>4. TLS: сертификат + шифрование</div>
+          <div>5. HTTP: запрос → HTML и ресурсы → отрисовка</div>
+        </div>
+        <div class="qa">
+          <div class="qa-label">Вопрос / ответ</div>
+          <p><strong>В:</strong> Зачем TLS, если уже есть TCP?</p>
+          <p><strong>О:</strong> TCP только доставляет байты по порядку. TLS шифрует их и проверяет, что ты на нужном сайте, а не у перехватчика.</p>
         </div>
       </section>
 
