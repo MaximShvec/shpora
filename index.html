@@ -316,6 +316,19 @@
           <a class="nav-link" href="#q-route">переход по роуту</a>
           <a class="nav-link" href="#q-refresh">F5 и авторизация</a>
         </div>
+        <div class="group" data-group>
+          <div class="group-title">Паттерны</div>
+          <a class="nav-link" href="#pattern-module">module</a>
+          <a class="nav-link" href="#pattern-singleton">singleton</a>
+          <a class="nav-link" href="#pattern-observer">observer</a>
+          <a class="nav-link" href="#pattern-factory">factory</a>
+          <a class="nav-link" href="#pattern-strategy">strategy</a>
+          <a class="nav-link" href="#pattern-adapter">adapter</a>
+          <a class="nav-link" href="#pattern-decorator">decorator HOC</a>
+          <a class="nav-link" href="#pattern-facade">facade</a>
+          <a class="nav-link" href="#pattern-composition">композиция</a>
+          <a class="nav-link" href="#pattern-mvc">MVC</a>
+        </div>
       </nav>
     </aside>
 
@@ -622,6 +635,66 @@
         <h2><span class="num">46</span> Что происходит при F5 на странице с авторизацией?</h2>
         <p>Память JS обнуляется: переменные, стейт React, стор в RAM. Браузер заново качает HTML и бандл. Если токен лежал только в переменной — его нет, человека выкинет на логин. Если он в <strong>Local Storage</strong> или <strong>cookie</strong> — приложение при старте читает его и снова ходит в <strong>/me</strong>.</p>
         <p>Поэтому «остаться в системе после обновления» — это про хранение сессии, а не про магию React. Короткий access мог истечь: тогда фронт берёт refresh и тихо получает новый. На собесе это хороший мостик к теме JWT vs cookie.</p>
+      </section>
+
+      <section class="topic" id="pattern-module">
+        <h2><span class="num">47</span> Module</h2>
+        <p><strong>Модуль</strong> прячет внутренности и отдаёт наружу только нужное. В JS это файл с <strong>export</strong>: снаружи видно то, что ты сам открыл. Раньше тот же приём делали замыканием. На фронте так живут утилиты, API-клиент, конфиг.</p>
+        <p>Смысл не в папках, а в границе: не светить лишние детали и не плодить глобальные переменные. Если на собесе спросят «как спрятать приватные данные» — модуль плюс замыкание.</p>
+      </section>
+
+      <section class="topic" id="pattern-singleton">
+        <h2><span class="num">48</span> Singleton</h2>
+        <p><strong>Синглтон</strong> — один экземпляр на всё приложение. Стор <strong>Redux</strong> или <strong>Zustand</strong> по сути такой: одно общее состояние. Тема, текущий пользователь, клиент API часто тоже живут в одном экземпляре.</p>
+        <p>Плюс: все ходят в одну точку и видят одни данные. Минус: тестировать сложнее, легко превратить в свалку. На собесе хватит фразы: «один объект, к нему ходят отовсюду».</p>
+      </section>
+
+      <section class="topic" id="pattern-observer">
+        <h2><span class="num">49</span> Observer / Pub-Sub</h2>
+        <p><strong>Наблюдатель</strong>: кто-то изменился — подписчики узнали, без прямой связи. В React так работают стейт, контекст и стор: подписался компонент — получил обновление. События DOM — тот же паттерн.</p>
+        <p><strong>Pub-sub</strong> чуть свободнее: есть канал вроде «пользователь вошёл», кто хочет — слушает. Главное слово на собесе — <strong>слабая связанность</strong>: отправитель не знает список слушателей.</p>
+      </section>
+
+      <section class="topic" id="pattern-factory">
+        <h2><span class="num">50</span> Factory</h2>
+        <p><strong>Фабрика</strong> — функция, которая создаёт объект или компонент по условию. Снаружи не размазываешь кучу if: «дай мне кнопку нужного типа». <strong>createElement</strong> в React — фабрика элементов.</p>
+        <p>Удобно, когда видов много, а создавать их хочется одинаково. На собесе могут спросить «как не писать switch на каждый тип карточки» — ответ: фабрика или словарь компонент по типу.</p>
+      </section>
+
+      <section class="topic" id="pattern-strategy">
+        <h2><span class="num">51</span> Strategy</h2>
+        <p><strong>Стратегия</strong> — подменяемый алгоритм с одним интерфейсом. Валидация формы, сортировка таблицы, способ оплаты: снаружи один вызов, внутри разная логика. В React часто просто передают функцию пропом.</p>
+        <p>Отличие от каши из if: новый вариант — новая стратегия, старый код почти не трогаешь. Если спросят разницу с фабрикой: фабрика <strong>создаёт</strong> объект, стратегия <strong>меняет поведение</strong> уже в работе.</p>
+      </section>
+
+      <section class="topic" id="pattern-adapter">
+        <h2><span class="num">52</span> Adapter</h2>
+        <p><strong>Адаптер</strong> переводит чужой формат в свой. Бэк отдал неудобные поля и даты-строки — адаптер делает модель, с которой удобно рисовать UI. Или обёртка над старой библиотекой, чтобы говорить с ней как с новой.</p>
+        <p>На фронте это почти всегда <strong>маппинг ответа API</strong>. Компонент не должен знать, как бэк назвал поле. На собесе: «между сервером и UI стоит переводчик».</p>
+      </section>
+
+      <section class="topic" id="pattern-decorator">
+        <h2><span class="num">53</span> Decorator и HOC</h2>
+        <p><strong>Декоратор</strong> оборачивает объект и добавляет поведение, не меняя оригинал. В React это был <strong>HOC</strong>: withAuth, withTheme — функция принимает компонент, возвращает обёрнутый. Сейчас чаще кастомные хуки и компоненты-обёртки.</p>
+        <p>Идея та же: не копировать логику, а надеть сверху. Минус HOC — ад обёрток и путаница с пропсами. Если спросят «чем заменить HOC» — хук или обёртка через children.</p>
+      </section>
+
+      <section class="topic" id="pattern-facade">
+        <h2><span class="num">54</span> Facade</h2>
+        <p><strong>Фасад</strong> — простая дверца к сложной кухне. Вместо трёх fetch, заголовков и разбора ошибок из компонента есть один вызов вроде «дай пользователя». Компонент не знает про HTTP.</p>
+        <p>Так обычно держат клиент бэка. На собесе: «спрятал сложность за одним простым методом». Не путать с адаптером: фасад упрощает вход, адаптер меняет форму данных.</p>
+      </section>
+
+      <section class="topic" id="pattern-composition">
+        <h2><span class="num">55</span> Композиция</h2>
+        <p>React почти не про наследование классов. <strong>Композиция</strong> — собрал UI из маленьких частей, как лего: children, слоты, кастомные хуки. Большой экран = набор мелких компонентов, а не длинная цепочка extends.</p>
+        <p>Наследование жёстко связывает, композиция гибче. Фраза, которую ждут: «не наследуй кнопку, оберни её или передай children». Это главный паттерн фронта, даже если его не называют словом из книжки.</p>
+      </section>
+
+      <section class="topic" id="pattern-mvc">
+        <h2><span class="num">56</span> MVC</h2>
+        <p><strong>MVC</strong>: Model — данные, View — картинка, Controller — связка. Так учили классику. React сам по себе не чистый MVC: компонент часто и view, и кусок контроллера, данные живут в стейте или сторе.</p>
+        <p><strong>MVVM</strong> ближе к «данные сами связаны с UI». На собесе не надо впихивать React в эти буквы. Достаточно сказать: знаю слои, но в React думаем компонентами и односторонним потоком данных, а не жёстким MVC.</p>
       </section>
     </main>
   </div>
