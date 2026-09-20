@@ -240,6 +240,147 @@
       display: none;
     }
 
+    .side-actions {
+      display: flex;
+      gap: 0.4rem;
+      margin: 0.75rem 0 0.9rem;
+    }
+
+    .side-actions .btn {
+      flex: 1;
+      text-align: center;
+    }
+
+    .btn-accent {
+      border-color: var(--accent);
+      color: #042f2e;
+      background: var(--accent);
+      font-weight: 700;
+    }
+
+    .btn-accent:hover { color: #042f2e; filter: brightness(1.08); }
+
+    .quiz {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      background: rgba(7, 10, 16, 0.92);
+      backdrop-filter: blur(10px);
+      overflow: auto;
+      padding: 1.2rem;
+    }
+
+    .quiz-box {
+      max-width: 720px;
+      margin: 0 auto 2rem;
+    }
+
+    .quiz-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .quiz-meta { color: var(--muted); font-size: 0.88rem; }
+    .quiz-topic {
+      display: inline-block;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 0.55rem;
+    }
+
+    .quiz-timer {
+      position: relative;
+      height: 8px;
+      background: var(--line);
+      border-radius: 99px;
+      overflow: hidden;
+      margin: 0.8rem 0 1.1rem;
+    }
+
+    .quiz-timer-bar {
+      height: 100%;
+      width: 100%;
+      background: var(--accent);
+      transform-origin: left center;
+    }
+
+    .quiz-timer-bar.warn { background: var(--accent-2); }
+    .quiz-timer-bar.hot { background: #f87171; }
+
+    .quiz-sec {
+      font-variant-numeric: tabular-nums;
+      color: var(--keyword);
+      font-weight: 700;
+    }
+
+    .quiz-q {
+      font-size: 1.25rem;
+      line-height: 1.4;
+      margin: 0 0 1rem;
+    }
+
+    .quiz-hint { color: var(--muted); font-size: 0.85rem; margin: -0.4rem 0 0.9rem; }
+
+    .quiz-opts { display: grid; gap: 0.55rem; }
+
+    .quiz-opt {
+      width: 100%;
+      text-align: left;
+      background: var(--card);
+      border: 1px solid var(--line);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 0.75rem 0.9rem;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    .quiz-opt:hover { border-color: var(--accent); }
+    .quiz-opt.selected {
+      border-color: var(--accent);
+      background: rgba(94, 234, 212, 0.1);
+    }
+
+    .quiz-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1.1rem;
+      flex-wrap: wrap;
+    }
+
+    .quiz-score {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0 0 0.4rem;
+    }
+
+    .quiz-miss {
+      margin-top: 1.2rem;
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .quiz-miss a {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 0.75rem 0.9rem;
+    }
+
+    .quiz-miss a:hover { border-color: var(--accent); }
+    .quiz-miss small { display: block; color: var(--muted); margin-top: 0.25rem; }
+
+    body.quiz-on { overflow: hidden; }
+
     @media (max-width: 860px) {
       .layout { grid-template-columns: 1fr; }
       .sidebar {
@@ -265,7 +406,10 @@
       <div class="tools">
         <input class="search" id="search" type="search" placeholder="Поиск: замыкание, jwt..." />
       </div>
-      <button class="btn" id="randomBtn" type="button">Случайная тема</button>
+      <div class="side-actions">
+        <button class="btn" id="randomBtn" type="button">Случайная тема</button>
+        <button class="btn btn-accent" id="quizBtn" type="button">Тест</button>
+      </div>
       <p class="empty" id="empty">Ничего не нашлось</p>
       <nav id="nav">
         <div class="group" data-group>
@@ -354,7 +498,8 @@
     <main class="content">
       <header class="hero">
         <h1>Короткая шпаргалка перед собесом</h1>
-        <p>Темы middle frontend React. Каждая карточка — 3–5 простых предложений. Жирным выделены слова, которые стоит произнести вслух.</p>
+        <p>Темы middle frontend React. Каждая карточка — 3–5 простых предложений. Жирным выделены слова, которые стоит произнести вслух. Есть режим теста: все темы, 30 секунд на ответ.</p>
+        <p><button class="btn btn-accent" id="quizBtnHero" type="button">Запустить тест</button></p>
       </header>
 
       <div class="note">
@@ -813,6 +958,46 @@
     </main>
   </div>
 
+  <div class="quiz" id="quiz" hidden>
+    <div class="quiz-box">
+      <div class="quiz-top">
+        <div class="quiz-meta" id="quizProgress">Тест</div>
+        <button class="btn" id="quizExit" type="button">Закрыть</button>
+      </div>
+
+      <div id="quizStart">
+        <h2>Режим тестирования</h2>
+        <p>Все темы шпаргалки. <span id="quizCount"></span> вопросов, на каждый ответ <strong>30 секунд</strong>. Есть вопросы с одним вариантом и с несколькими верными. Вопросы каждый раз в случайном порядке.</p>
+        <p class="quiz-hint">Если время выйдет — ответ засчитается как есть. В конце увидишь ошибки и ссылку на тему.</p>
+        <div class="quiz-actions">
+          <button class="btn btn-accent" id="quizBegin" type="button">Начать</button>
+        </div>
+      </div>
+
+      <div id="quizPlay" hidden>
+        <div class="quiz-topic" id="quizTopic"></div>
+        <h2 class="quiz-q" id="quizQuestion"></h2>
+        <p class="quiz-hint" id="quizHint"></p>
+        <div class="quiz-timer"><div class="quiz-timer-bar" id="quizBar"></div></div>
+        <div class="quiz-meta">Осталось <span class="quiz-sec" id="quizSec">30</span> сек</div>
+        <div class="quiz-opts" id="quizOpts"></div>
+        <div class="quiz-actions">
+          <button class="btn btn-accent" id="quizSubmit" type="button">Ответить</button>
+        </div>
+      </div>
+
+      <div id="quizEnd" hidden>
+        <p class="quiz-score" id="quizScore"></p>
+        <p class="quiz-hint">Ошибки ниже — клик откроет тему в шпаргалке.</p>
+        <div class="quiz-miss" id="quizMiss"></div>
+        <div class="quiz-actions">
+          <button class="btn btn-accent" id="quizAgain" type="button">Ещё раз</button>
+          <button class="btn" id="quizClose" type="button">К шпаргалке</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const sidebar = document.getElementById("sidebar");
     const menuBtn = document.getElementById("menuBtn");
@@ -860,6 +1045,239 @@
     }, { rootMargin: "-20% 0px -70% 0px" });
 
     document.querySelectorAll("section.topic").forEach((section) => observer.observe(section));
+
+    const QUIZ = [
+      { t: "js-types", n: "Типы данных в JS", q: "Что вернёт typeof null?", a: ["\"null\"", "\"undefined\"", "\"object\"", "\"number\""], c: 2 },
+      { t: "js-types", n: "Типы данных в JS", q: "Как правильно проверить, что значение — массив?", a: ["typeof x === \"array\"", "x instanceof Object", "Array.isArray(x)", "x === []"], c: 2 },
+      { t: "js-var", n: "var, let, const", q: "Можно ли менять поля объекта, объявленного через const?", a: ["Нет, объект заморожен", "Да, нельзя только подменить саму переменную", "Только если объект в глобальной области", "Только через Object.freeze"], c: 1 },
+      { t: "js-var", n: "var, let, const", q: "Где живёт переменная, объявленная через let внутри if?", a: ["Во всей функции", "В блоке { }", "В window", "Нигде, let так нельзя"], c: 1 },
+      { t: "js-equal", n: "== и ===", q: "Чем === отличается от ==?", a: ["Ничем, это синонимы", "=== сравнивает и значение, и тип, == сначала приводит типы", "== быстрее", "=== работает только с числами"], c: 1 },
+      { t: "js-scope", n: "Области видимости", q: "Чем is not defined отличается от undefined?", a: ["Ничем", "Первое — имени нет, второе — имя есть, значения нет", "undefined — это ошибка", "is not defined бывает только у const"], c: 1 },
+      { t: "js-hoisting", n: "Всплытие", q: "Почему function declaration можно вызвать выше по коду?", a: ["Потому что JS многопоточный", "Потому что вся функция всплывает", "Потому что её кладут в Local Storage", "Так работает только в модулях"], c: 1 },
+      { t: "js-hoisting", n: "Всплытие", q: "Что будет, если обратиться к let до строки объявления?", a: ["undefined", "null", "Ошибка из-за временной мёртвой зоны", "0"], c: 2 },
+      { t: "js-closure", n: "Замыкания", q: "Замыкание копирует значение переменной?", a: ["Да, всегда делает снимок", "Нет, это живая ссылка на окружение", "Только для объектов", "Только для var"], c: 1 },
+      { t: "js-closure", n: "Замыкания", q: "Почему в цикле с var все setTimeout видят одно i?", a: ["var живёт в функции, одна переменная на всех", "setTimeout ломает замыкание", "i примитив и не замыкается", "Так задумано в ES6"], c: 0 },
+      { t: "js-this", n: "this", q: "Откуда стрелка берёт this?", a: ["От того, кто её вызвал", "Снаружи, своего this у неё нет", "Всегда window", "От первого аргумента"], c: 1 },
+      { t: "js-bind", n: "call apply bind", q: "Что делает bind?", a: ["Сразу вызывает функцию", "Возвращает новую функцию с пришитым this", "Удаляет this", "Копирует объект"], c: 1 },
+      { t: "js-proto", n: "Прототипы", q: "Где лежит метод массива map?", a: ["В каждом массиве отдельно", "На Array.prototype", "В window", "В V8 как магия без прототипа"], c: 1 },
+      { t: "js-proto", n: "Прототипы", q: "Чем class в JS является на самом деле?", a: ["Отдельным типом как в Java", "Сахаром над прототипами", "Заменой замыканий", "Частью TypeScript"], c: 1 },
+      { t: "js-recursion", n: "Рекурсия", q: "Что обязательно нужно рекурсии, чтобы не уйти в бесконечность?", a: ["Замыкание", "Базовый случай, условие выхода", "Промис", "key у списка"], c: 1 },
+      { t: "js-event-loop", n: "Event loop", q: "Что выполнится раньше: Promise.then или setTimeout(fn, 0)?", a: ["setTimeout, он нулевой", "Promise.then, это микротаска", "Как повезёт", "Оба сразу"], c: 1 },
+      { t: "js-event-loop", n: "Event loop", q: "Отметь микротаски", a: ["Promise.then", "setTimeout", "queueMicrotask", "click"], c: [0, 2], m: true },
+      { t: "js-promise", n: "Промисы", q: "Почему несколько await подряд обычно медленнее Promise.all?", a: ["await запрещён в цикле", "await ждёт по очереди, all запускает сразу", "Promise.all не ждёт ошибок", "await идёт в макротаски"], c: 1 },
+      { t: "js-promise", n: "Промисы", q: "Что сделает Promise.all, если один промис упал?", a: ["Дождётся остальных и вернёт все", "Сразу перейдёт в rejected", "Проигнорирует ошибку", "Повторит упавший"], c: 1 },
+      { t: "js-events", n: "Всплытие событий", q: "Чем stopPropagation отличается от preventDefault?", a: ["Ничем", "Первый стопит путь по дереву, второй — действие браузера", "preventDefault стопит всплытие", "stopPropagation отменяет переход по ссылке"], c: 1 },
+      { t: "js-events", n: "Всплытие событий", q: "На какой фазе слушатель висит по умолчанию?", a: ["Погружение", "Всплытие", "Только на window", "Только на цели"], c: 1 },
+      { t: "js-delegate", n: "Делегирование", q: "Зачем вешать один слушатель на родителя списка?", a: ["Чтобы отключить всплытие", "Ловить клики детей через всплытие, даже у новых элементов", "Так требует React", "Чтобы preventDefault работал"], c: 1 },
+      { t: "js-copy", n: "Копирование", q: "Что копирует spread у вложенного объекта?", a: ["Всё дерево", "Только первый уровень, внутри та же ссылка", "Ничего, spread для массивов", "Только функции"], c: 1 },
+      { t: "js-copy", n: "Копирование", q: "Что происходит при const b = a, если a — объект?", a: ["Глубокая копия", "Два имени смотрят на один объект", "a становится примитивом", "b — замороженная копия"], c: 1 },
+      { t: "js-map", n: "Map и Set", q: "Чем Map удобнее обычного объекта как словарь?", a: ["Map нельзя перебрать", "Ключом может быть что угодно, не только строка", "Map быстрее HTML", "У Map нет размера"], c: 1 },
+      { t: "js-debounce", n: "Debounce и throttle", q: "В чём разница debounce и throttle?", a: ["Debounce — после паузы, throttle — не чаще чем раз в N мс", "Это одно и то же", "Throttle ждёт тишины", "Debounce только для скролла"], c: 0 },
+      { t: "ts-types", n: "Типы данных в TS", q: "Попадают ли типы TypeScript в браузер?", a: ["Да, их читает V8", "Нет, компилятор их стирает", "Только interface", "Только enum"], c: 1 },
+      { t: "ts-base", n: "TypeScript: база", q: "Чем union отличается от intersection?", a: ["Union — «или», intersection — «и»", "Это синонимы", "Union только для классов", "Intersection стирает поля"], c: 0 },
+      { t: "ts-generic", n: "Дженерики", q: "Зачем дженерик T у функции?", a: ["Чтобы отключить проверку", "Чтобы не копировать типы: приняла T — вернула T", "Чтобы код стал медленнее", "Это обязательный синтаксис async"], c: 1 },
+      { t: "ts-any", n: "any unknown never", q: "Чем unknown спокойнее any?", a: ["Ничем", "unknown тоже «что угодно», но сначала нужно сузить проверкой", "unknown удаляет поле", "any нельзя присвоить"], c: 1 },
+      { t: "ts-util", n: "Utility types", q: "Что делает Partial<T>?", a: ["Удаляет все поля", "Делает поля необязательными", "Делает поля только для чтения", "Берёт тип возврата"], c: 1 },
+      { t: "react-arch", n: "FSD и Atomic", q: "Чем FSD отличается от Atomic Design?", a: ["Ничем", "FSD про границы фич и слои, Atomic — про детали UI", "Atomic запрещает shared", "FSD только для CSS"], c: 1 },
+      { t: "react-css", n: "Стили в React", q: "Что дают CSS Modules?", a: ["Глобальные классы без сборки", "Уникальные имена классов, меньше конфликтов", "Инлайн-стили", "Только темы"], c: 1 },
+      { t: "react-dom", n: "React и DOM", q: "Когда React пишет в настоящий DOM?", a: ["В начале render", "В фазе commit", "В useEffect до commit", "Никогда, DOM трогает только браузер сам"], c: 1 },
+      { t: "react-dom", n: "React и DOM", q: "Когда бежит useLayoutEffect относительно кадра?", a: ["После отрисовки кадра", "После DOM, но до кадра", "До вызова компонента", "Вместо commit"], c: 1 },
+      { t: "react-vdom", n: "Virtual DOM и Fiber", q: "Зачем нужен Fiber, если есть Virtual DOM?", a: ["Fiber рисует CSS", "Virtual DOM — снимок дерева, Fiber дробит работу и ставит на паузу", "Fiber заменяет ключи", "Это старое имя Virtual DOM"], c: 1 },
+      { t: "react-vdom", n: "Virtual DOM и Fiber", q: "Что будет, если тип элемента сменился с div на span?", a: ["React обновит только текст", "Старое поддерево выкинут и создадут заново", "Ничего, тип не важен", "Сработает только Fiber"], c: 1 },
+      { t: "react-hooks", n: "Хуки", q: "Почему хуки нельзя класть в if?", a: ["Так медленнее", "React помнит хуки по порядку вызова", "if запрещён в компонентах", "Только useEffect нельзя"], c: 1 },
+      { t: "react-hooks", n: "Хуки", q: "Что делает useRef в отличие от useState?", a: ["Всегда вызывает рендер", "Хранит значение без рендера", "Удаляет DOM", "Кэширует JSX"], c: 1 },
+      { t: "react-keys", n: "Ключи в списках", q: "Почему индекс плохой key, если список сортируют?", a: ["Индекс нельзя поставить в JSX", "После сортировки тот же индекс — уже другой элемент", "React не понимает числа", "Индекс работает только с map"], c: 1 },
+      { t: "react-keys", n: "Ключи в списках", q: "Что будет при key={Math.random()}?", a: ["Список станет быстрее", "Элемент каждый раз как новый, стейт сбросится", "React закэширует ключ", "Ничего"], c: 1 },
+      { t: "react-context", n: "Context", q: "Почему Context плохо подходит для частого стейта?", a: ["Context нельзя прокинуть", "Новый value часто будит всех потребителей", "Context не работает в React 18", "В Context нельзя класть объекты"], c: 1 },
+      { t: "react-forms-ctrl", n: "Controlled", q: "Где живёт значение controlled-инпута?", a: ["Только в DOM", "В стейте React, onChange его обновляет", "В cookie", "В CSS"], c: 1 },
+      { t: "react-memo", n: "memo useMemo", q: "Почему memo может не помочь, если в проп кладут объект на месте?", a: ["memo не сравнивает пропсы", "Ссылка каждый раз новая, memo думает, что проп другой", "Объекты нельзя передавать", "useMemo запрещён рядом"], c: 1 },
+      { t: "store", n: "Zustand и Redux", q: "Чем Zustand удобнее Context для частого стейта?", a: ["У него нет селекторов", "Селектор подписывает только на кусок данных", "Он работает без JS", "Он заменяет роутер"], c: 1 },
+      { t: "store", n: "Zustand и Redux", q: "Куда лучше класть данные с сервера: в Redux или в TanStack Query?", a: ["Всегда в Redux", "В Query: кэш, статусы, инвалидация. В сторе — UI", "Только в Context", "В Local Storage"], c: 1 },
+      { t: "forms", n: "Формы, Zod, Yup", q: "Чем Zod удобен во фронтовом TypeScript?", a: ["Он рисует инпуты", "Из схемы выводится тип данных", "Он заменяет роутер", "Он хранит JWT"], c: 1 },
+      { t: "tanstack", n: "TanStack и Router", q: "Для чего queryKey в TanStack Query?", a: ["Это CSS-класс", "Это адрес кэша запроса", "Это ключ React в списке", "Это JWT"], c: 1 },
+      { t: "http", n: "HTTP", q: "Что значит, что HTTP stateless?", a: ["Сервер всегда помнит пользователя", "Сервер сам не помнит тебя между запросами", "GET нельзя повторять", "HTTPS запрещён"], c: 1 },
+      { t: "cors", n: "CORS", q: "Почему в Postman запрос проходит, а из браузера нет?", a: ["Postman быстрее", "CORS проверяет только браузер", "У Postman всегда есть токен", "fetch сломан"], c: 1 },
+      { t: "cors", n: "CORS", q: "Что такое preflight?", a: ["Повторный GET", "Предварительный OPTIONS: можно ли так ходить", "Редирект на логин", "Сжатие ответа"], c: 1 },
+      { t: "jwt", n: "JWT и storage", q: "JWT — это шифрование содержимого?", a: ["Да, payload нельзя прочитать", "Нет, это подпись. Payload можно декодировать", "Да, если лежит в cookie", "Только refresh шифруют"], c: 1 },
+      { t: "jwt", n: "JWT и storage", q: "Какая связка хранения обычно спокойнее?", a: ["Access навсегда в Local Storage", "Короткий access в памяти, refresh в HttpOnly cookie", "Оба токена в query", "Только sessionStorage без срока"], c: 1 },
+      { t: "jwt", n: "JWT и storage", q: "Откуда чужой JS на странице сможет прочитать токен?", a: ["Local Storage", "sessionStorage", "HttpOnly cookie", "Переменная в памяти, пока вкладка жива"], c: [0, 1, 3], m: true },
+      { t: "auth", n: "Авторизация", q: "Чем фронт обычно отправляет логин и пароль?", a: ["GET в адресной строке", "POST через fetch или axios, JSON по HTTPS", "Через CSS", "Через Local Storage напрямую на бэк"], c: 1 },
+      { t: "auth", n: "Авторизация", q: "Куда лучше класть короткий access-токен?", a: ["В Local Storage на годы", "В память приложения", "В title страницы", "В CSS-переменную"], c: 1 },
+      { t: "xss", n: "XSS и CSRF", q: "Что скорее украдёт токен из Local Storage?", a: ["CSRF", "XSS: чужой JS на странице", "CORS", "TCP"], c: 1 },
+      { t: "css-box", n: "Box model, Flex, Grid", q: "Что даёт box-sizing: border-box?", a: ["Убирает margin", "Ширина включает padding и border", "Включает только margin", "Отключает flex"], c: 1 },
+      { t: "css-pos", n: "Позиционирование", q: "Как ведёт себя position: sticky?", a: ["Всегда как fixed", "Как relative, пока не доскроллишь — потом липнет", "Вынимает из потока сразу", "Работает только у html"], c: 1 },
+      { t: "q-domain", n: "Домен в строке", q: "В каком порядке обычно идут шаги после ввода домена?", a: ["HTTP → DNS → TCP", "DNS → TCP → TLS → HTTP", "TLS → DNS → отрисовка", "TCP → DNS → cookie"], c: 1 },
+      { t: "q-domain", n: "Домен в строке", q: "Зачем TLS, если уже есть TCP?", a: ["TLS ищет IP", "TCP доставляет байты, TLS шифрует и проверяет сайт", "TLS рисует DOM", "TCP уже шифрует"], c: 1 },
+      { t: "http", n: "HTTP", q: "Какие методы обычно идемпотентны: повтор не должен плодить новые сущности?", a: ["GET", "POST", "PUT", "DELETE"], c: [0, 2, 3], m: true },
+      { t: "q-render", n: "HTML → пиксели", q: "Из чего браузер собирает render tree?", a: ["Только из JS", "Из DOM и CSSOM, только то, что видно", "Из cookie", "Из Virtual DOM React"], c: 1 },
+      { t: "q-click", n: "Клик в React", q: "Что делает React сразу после setState по клику?", a: ["Сразу пишет в DOM руками", "Планирует новый рендер и сверку дерева", "Перезагружает страницу", "Чистит Local Storage"], c: 1 },
+      { t: "q-route", n: "Переход по роуту", q: "Что происходит при клике на Link в SPA?", a: ["Полная перезагрузка документа", "Меняется URL и компонент, страница не перезагружается целиком", "Браузер забывает History", "Сервер обязан отдать новый HTML"], c: 1 },
+      { t: "q-refresh", n: "F5 и авторизация", q: "Что случается с React-стейтом и переменными после F5?", a: ["Они переживают обновление сами", "Память JS обнуляется", "Стор всегда пишется на диск", "Роутер сохраняет useState"], c: 1 },
+      { t: "pattern-module", n: "Module", q: "В чём смысл модуля?", a: ["Все переменные глобальные", "Спрятать внутренности и отдать наружу только export", "Заменить HTTP", "Это только папка"], c: 1 },
+      { t: "pattern-singleton", n: "Singleton", q: "Почему стор часто называют синглтоном?", a: ["Потому что он копируется в каждый компонент", "Один экземпляр на приложение", "Потому что он одноразовый", "Потому что его нельзя импортировать"], c: 1 },
+      { t: "pattern-observer", n: "Observer", q: "Что главное в Observer / Pub-Sub?", a: ["Жёсткая связь отправителя и слушателя", "Подписчики узнают об изменении без прямой связи", "Это только про CSS", "Это замена TCP"], c: 1 },
+      { t: "pattern-factory", n: "Factory", q: "Что делает фабрика?", a: ["Меняет алгоритм на лету", "Создаёт объект или компонент по условию", "Переводит формат API", "Оборачивает HOC"], c: 1 },
+      { t: "pattern-strategy", n: "Strategy", q: "Чем стратегия отличается от фабрики?", a: ["Ничем", "Фабрика создаёт объект, стратегия подменяет поведение", "Стратегия только про CSS", "Фабрика — это Observer"], c: 1 },
+      { t: "pattern-adapter", n: "Adapter", q: "Где на фронте чаще всего адаптер?", a: ["В box-model", "Маппинг ответа API в удобную модель UI", "В event loop", "В ключах списка"], c: 1 },
+      { t: "pattern-decorator", n: "Decorator и HOC", q: "Что делает HOC?", a: ["Удаляет компонент", "Принимает компонент и возвращает обёрнутый с новым поведением", "Создаёт стор", "Это тип TypeScript"], c: 1 },
+      { t: "pattern-facade", n: "Facade", q: "Что даёт фасад?", a: ["Новый формат данных", "Простой вход к сложной кухне, например api.getUser()", "Всплытие событий", "Глубокую копию"], c: 1 },
+      { t: "pattern-composition", n: "Композиция", q: "Какой главный паттерн сборки UI в React?", a: ["Длинное наследование классов", "Композиция: дети, обёртки, хуки", "Только MVC", "Только синглтон"], c: 1 },
+      { t: "pattern-mvc", n: "MVC", q: "React — это чистый MVC?", a: ["Да, каждый компонент строго View", "Нет, компонент часто и view, и кусок контроллера", "Да, стор — это Controller", "MVC запрещён в SPA"], c: 1 }
+    ];
+
+    const quizEl = document.getElementById("quiz");
+    const quizStart = document.getElementById("quizStart");
+    const quizPlay = document.getElementById("quizPlay");
+    const quizEnd = document.getElementById("quizEnd");
+    const TIME = 30;
+    let pack = [];
+    let i = 0;
+    let picked = [];
+    let left = TIME;
+    let tickId = null;
+    let answers = [];
+
+    function shuffle(list) {
+      const arr = list.slice();
+      for (let n = arr.length - 1; n > 0; n -= 1) {
+        const j = Math.floor(Math.random() * (n + 1));
+        [arr[n], arr[j]] = [arr[j], arr[n]];
+      }
+      return arr;
+    }
+
+    function openQuiz() {
+      document.body.classList.add("quiz-on");
+      quizEl.hidden = false;
+      quizStart.hidden = false;
+      quizPlay.hidden = true;
+      quizEnd.hidden = true;
+      document.getElementById("quizCount").textContent = String(QUIZ.length);
+      sidebar.classList.remove("open");
+    }
+
+    function closeQuiz() {
+      stopTick();
+      document.body.classList.remove("quiz-on");
+      quizEl.hidden = true;
+    }
+
+    function startQuiz() {
+      pack = shuffle(QUIZ);
+      i = 0;
+      answers = [];
+      quizStart.hidden = true;
+      quizEnd.hidden = true;
+      quizPlay.hidden = false;
+      renderQ();
+    }
+
+    function stopTick() {
+      if (tickId) clearInterval(tickId);
+      tickId = null;
+    }
+
+    function renderQ() {
+      const item = pack[i];
+      picked = [];
+      left = TIME;
+      document.getElementById("quizProgress").textContent = (i + 1) + " / " + pack.length;
+      document.getElementById("quizSec").textContent = left;
+      document.getElementById("quizTopic").textContent = item.n;
+      document.getElementById("quizQuestion").textContent = item.q;
+      document.getElementById("quizHint").textContent = item.m ? "Отметь все верные, потом нажми «Ответить»." : "Выбери один вариант.";
+      const bar = document.getElementById("quizBar");
+      bar.style.transform = "scaleX(1)";
+      bar.className = "quiz-timer-bar";
+      const box = document.getElementById("quizOpts");
+      box.innerHTML = "";
+      item.a.forEach((text, idx) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "quiz-opt";
+        btn.textContent = text;
+        btn.addEventListener("click", () => togglePick(idx, item.m, btn));
+        box.appendChild(btn);
+      });
+      stopTick();
+      tickId = setInterval(() => {
+        left -= 1;
+        document.getElementById("quizSec").textContent = Math.max(left, 0);
+        bar.style.transform = "scaleX(" + Math.max(left, 0) / TIME + ")";
+        bar.classList.toggle("warn", left <= 10);
+        bar.classList.toggle("hot", left <= 5);
+        if (left <= 0) submitQ();
+      }, 1000);
+    }
+
+    function togglePick(idx, multi, btn) {
+      if (multi) {
+        if (picked.includes(idx)) {
+          picked = picked.filter((x) => x !== idx);
+          btn.classList.remove("selected");
+        } else {
+          picked.push(idx);
+          btn.classList.add("selected");
+        }
+        return;
+      }
+      picked = [idx];
+      [...document.getElementById("quizOpts").children].forEach((el) => el.classList.remove("selected"));
+      btn.classList.add("selected");
+    }
+
+    function sameSet(a, b) {
+      const leftSet = Array.isArray(a) ? a : [a];
+      if (leftSet.length !== b.length) return false;
+      return leftSet.slice().sort().join() === b.slice().sort().join();
+    }
+
+    let busy = false;
+
+    function submitQ() {
+      if (busy) return;
+      busy = true;
+      stopTick();
+      const item = pack[i];
+      const ok = picked.length > 0 && sameSet(item.c, picked);
+      answers.push({ item, ok, picked: picked.slice() });
+      i += 1;
+      if (i >= pack.length) {
+        busy = false;
+        showEnd();
+        return;
+      }
+      busy = false;
+      renderQ();
+    }
+
+    function showEnd() {
+      quizPlay.hidden = true;
+      quizEnd.hidden = false;
+      const ok = answers.filter((x) => x.ok).length;
+      document.getElementById("quizScore").textContent = ok + " из " + answers.length;
+      const miss = answers.filter((x) => !x.ok);
+      const box = document.getElementById("quizMiss");
+      if (!miss.length) {
+        box.innerHTML = "<p>Все ответы верные. Можно идти на собес.</p>";
+        return;
+      }
+      box.innerHTML = miss.map((row) => {
+        const right = (Array.isArray(row.item.c) ? row.item.c : [row.item.c]).map((n) => row.item.a[n]).join("; ");
+        return "<a href=\"#" + row.item.t + "\">" + row.item.n + "<small>" + row.item.q + "<br>Верно: " + right + "</small></a>";
+      }).join("");
+      box.querySelectorAll("a").forEach((a) => {
+        a.addEventListener("click", () => closeQuiz());
+      });
+    }
+
+    document.getElementById("quizBtn").addEventListener("click", openQuiz);
+    document.getElementById("quizBtnHero").addEventListener("click", openQuiz);
+    document.getElementById("quizBegin").addEventListener("click", startQuiz);
+    document.getElementById("quizAgain").addEventListener("click", startQuiz);
+    document.getElementById("quizClose").addEventListener("click", closeQuiz);
+    document.getElementById("quizExit").addEventListener("click", closeQuiz);
+    document.getElementById("quizSubmit").addEventListener("click", submitQ);
   </script>
 </body>
 </html>
